@@ -9,13 +9,13 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 int main(void)
 {
   GLFWwindow* window;
-
+  int width = 640, height = 480;
   /* Initialize the library */
   if (!glfwInit())
     return -1;
 
   /* Create a windowed mode window and its OpenGL context */
-  window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+  window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
   if (!window)
   {
     glfwTerminate();
