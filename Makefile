@@ -15,9 +15,9 @@ GIT = /usr/bin/git
 CC = gcc
 
 CFLAGS += -g -Wall -O2  -D_GNU_SOURCE
-LFLAGS += -lGLEW -lglfw
+LFLAGS += -lGLEW -lglfw -lGL -lGLU
 
-SRC = main.c
+SRC = main.c  render.c
 OBJ = $(SRC:.c=.o)
 BIN = app
 
