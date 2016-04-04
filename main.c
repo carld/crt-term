@@ -114,7 +114,11 @@ int main(int argc, char *argv[], char *envp[])
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
+#if ORTHO
+  display_create(&display, width * 0.5, height * 0.50, fontfile);
+#else
   display_create(&display, width * 0.33, height * 0.50, fontfile);
+#endif
   terminal_create(&terminal, display->width / display->font->bbox.width, display->height / display->font->bbox.height);  // 9x15.bdf
 
   glfwSetWindowUserPointer(window, terminal);
@@ -156,10 +160,20 @@ int main(int argc, char *argv[], char *envp[])
 #endif
     glPolygonMode(GL_FRONT,GL_LINE);
     glBegin(GL_QUADS);
+
+#if ORTHO
+    GLint xoff = (width - display->width) * 0.5, yoff = (height - display->height) * 0.5;
+      glTexCoord2i(0.0, 1.0); glVertex3i(xoff, yoff, 0.0);
+      glTexCoord2i(0.0, 0.0); glVertex3i(xoff, yoff + display->height, 0.0);
+      glTexCoord2i(1.0, 0.0); glVertex3i(xoff + display->width, yoff + display->height, 0.0);
+      glTexCoord2i(1.0, 1.0); glVertex3i(xoff + display->width, yoff, 0.0);
+#else
       glTexCoord2f(0.0, 1.0); glVertex3f(0, 0, 0.0);
       glTexCoord2f(0.0, 0.0); glVertex3f(0, display->height, 0.0);
       glTexCoord2f(1.0, 0.0); glVertex3f(display->width, display->height, 0.0);
       glTexCoord2f(1.0, 1.0); glVertex3f(display->width, 0.0, 0.0);
+#endif
+
     glEnd();
 //    glRecti(-100,-100,100,100);
     glFlush();
