@@ -22,6 +22,8 @@ struct display {
 
   GLubyte * fg;
   GLubyte * bg;
+
+  int age;
 };
 
 

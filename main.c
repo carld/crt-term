@@ -129,7 +129,7 @@ int main(int argc, char *argv[], char *envp[])
    
     shl_pty_dispatch(terminal->pty); 
 
-    tsm_screen_draw(terminal->screen, draw_cb, display);
+    display->age = tsm_screen_draw(terminal->screen, draw_cb, display);
 
     display_update(display);
     display_update_texture(display);
