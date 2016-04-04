@@ -38,8 +38,8 @@ static GLushort make_pixel16(GLubyte r, GLubyte g, GLubyte b, GLubyte a) {
   return p;
 }
 
-#define white_pixel make_pixel16(0xff,0xff,0xff,0xff)
-#define black_pixel make_pixel16(0x00,0x00,0x00,0xff)
+static const GLushort white_pixel = 0xffff;
+static const GLushort black_pixel = 0x000f;
 
 #if 1
 /* for debugging */
@@ -66,19 +66,17 @@ void display_update(struct display *disp) {
   int x, y, r, c;
   for(y = 0; y < disp->rows; y++) {
     for(x = 0; x < disp->cols; x++) {
-      int text_index = y * disp->cols + x;
-      char ch = disp->text_buffer[text_index];
+      int text_ix = y * disp->cols + x;
+      char ch = disp->text_buffer[text_ix];
       int src_index = font_pixels_encoding_index(disp, ch);
-      int dst_index = display_pixels_index(disp, x * disp->font->bbox.width, y * disp->font->bbox.height);
-      int attr_index = y * disp->cols + x;
+      int dst_index = display_pixels_index(disp, x * glinew, y * disp->font->bbox.height);
       for (r = 0; r < disp->font->bbox.height; r++) {
+        int src_ch_ix = src_index + r * glinew;
+        int dst_ch_ix = dst_index + r * dlinew;
         for (c = 0; c < disp->font->bbox.width; c++) {
-          int src_channel_index = src_index + r * glinew + c;
-          int dst_channel_index = dst_index + r * dlinew + c;
-
-          disp->pixels[dst_channel_index] = 
-            disp->font_pixels[src_channel_index] != black_pixel ? 
-              disp->fg[attr_index] : disp->bg[attr_index];
+          disp->pixels[dst_ch_ix + c] = 
+            disp->font_pixels[src_ch_ix + c] == black_pixel ? 
+              disp->bg[text_ix] : disp->fg[text_ix];
         }
       }
     }
@@ -95,7 +93,6 @@ void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4]
   disp->text_buffer[index] = ch;
   disp->fg[index] = make_pixel16(fg[0],fg[1],fg[2],fg[3]);
   disp->bg[index] = make_pixel16(bg[0],bg[1],bg[2],bg[3]);
-  //display_dump_glyph(disp,ch);
 }
 
 void display_update_texture(struct display *disp) {
@@ -111,7 +108,6 @@ void display_update_texture(struct display *disp) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
     disp->width, disp->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, disp->pixels);
-  //glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 static void display_load_bdf(struct display *disp, const char *filename) {

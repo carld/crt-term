@@ -35,7 +35,6 @@ static int draw_cb(struct tsm_screen *screen, uint32_t id,
   int skip;
 
   skip = age && disp->age && age <= disp->age;
-
   if (skip) return 0;
 
   if (attr->inverse) {
@@ -133,7 +132,6 @@ int main(int argc, char *argv[], char *envp[])
   while (!glfwWindowShouldClose(window)) {
     shl_pty_dispatch(terminal->pty); 
     display->age = tsm_screen_draw(terminal->screen, draw_cb, display);
-
     display_update(display);
     display_update_texture(display);
 
@@ -163,7 +161,6 @@ int main(int argc, char *argv[], char *envp[])
 #endif
     glPolygonMode(GL_FRONT,GL_LINE);
     glBegin(GL_QUADS);
-
 #if ORTHO
     GLint xoff = (width - display->width) * 0.5, yoff = (height - display->height) * 0.5;
       glTexCoord2i(0.0, 1.0); glVertex3i(xoff, yoff, 0.0);
@@ -184,7 +181,7 @@ int main(int argc, char *argv[], char *envp[])
 
     glfwSwapBuffers(window);
     glfwPollEvents();
-    usleep(20000);
+    usleep(40000);
 //    if (rot >= 3) rotd = -0.1;
 //    if (rot <= -3) rotd = +0.1;
 //    rot += rotd;
