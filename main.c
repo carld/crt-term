@@ -99,6 +99,13 @@ int main(int argc, char *argv[], char *envp[])
     }
   }
 
+#if ORTHO
+  display_create(&display, width * 0.5, height * 0.50, fontfile);
+#else
+  display_create(&display, width * 0.45, height * 0.50, fontfile);
+#endif
+  terminal_create(&terminal, display->width / display->font->bbox.width, display->height / display->font->bbox.height);  // 9x15.bdf
+
   if (!glfwInit())
     return -1;
  
@@ -117,13 +124,6 @@ int main(int argc, char *argv[], char *envp[])
 
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
-
-#if ORTHO
-  display_create(&display, width * 0.5, height * 0.50, fontfile);
-#else
-  display_create(&display, width * 0.45, height * 0.50, fontfile);
-#endif
-  terminal_create(&terminal, display->width / display->font->bbox.width, display->height / display->font->bbox.height);  // 9x15.bdf
 
   glfwSetWindowUserPointer(window, terminal);
   glfwSwapInterval(1);
