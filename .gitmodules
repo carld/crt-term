@@ -1,0 +1,6 @@
+[submodule "libtsm"]
+	path = libtsm
+	url = https://github.com/syuu1228/libtsm.git
+[submodule "libshl"]
+	path = libshl
+	url = https://github.com/dvdhrm/libshl.git
