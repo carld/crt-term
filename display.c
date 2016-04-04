@@ -110,21 +110,24 @@ static void display_load_bdf(struct display *disp, const char *filename) {
   FILE *fp = NULL;
   int lines = 0;
   int ngly = 0;
+  int total_chars = 255;
+
   printf("Opening '%s'\n", filename);
   fp = fopen(filename, "r");
   assert(fp != NULL);
   bdf_read(fp, &disp->font, &lines);
+  bdf_sort_glyphs(disp->font);
   fclose(fp);
 
-  disp->font_width = disp->font->bbox.width * disp->font->glyphs_count;
+  disp->font_width = disp->font->bbox.width * total_chars;
   disp->font_height = disp->font->bbox.height;
   disp->font_pixels_size = 
-    disp->font->bbox.width * disp->font->bbox.height 
-    * disp->font->glyphs_count * disp->bpp;
+    disp->font->bbox.width * disp->font->bbox.height * total_chars * disp->bpp;
   disp->font_pixels = calloc(disp->font_pixels_size, sizeof (GLubyte));
-  for(ngly = 0; ngly < disp->font->glyphs_count; ngly++) {
-    struct bdf_glyph *glyph = &disp->font->glyphs[ngly];
+  for(ngly = 0; ngly < total_chars; ngly++) {
+    struct bdf_glyph *glyph = bdf_find_glyph(disp->font, ngly, 0);
     int row, col;
+    if (glyph == NULL) continue;
     int ncolbytes = (glyph->bbox.width + 7) / 8;
     for (row = 0; row < glyph->bbox.height; row++) {
       for (col = 0; col < glyph->bbox.width; col++) {
