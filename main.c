@@ -138,7 +138,7 @@ int main(int argc, char *argv[], char *envp[])
 #if ORTHO
 #else
     glRotatef(rot, 1.0,0.0,0.0);
-    glTranslatef(0,0,-(display->width * 0.5)); 
+    glTranslatef(0,0,-(display->width * 0.75)); 
     glTranslatef(-(display->width * 0.5),-(display->height * 0.5),0); 
 #endif
     glPolygonMode(GL_FRONT,GL_LINE);
