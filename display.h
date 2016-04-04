@@ -3,23 +3,19 @@ struct display {
   struct bdf_font *font;
 
   GLuint font_width, font_height;
-  GLubyte *font_pixels;
+  GLushort *font_pixels;
   int font_pixels_size;
 
   GLuint width, height;
-  GLubyte *pixels;
+  GLushort * pixels;
+  GLushort * fg;
+  GLushort * bg;
   int pixels_size;
-
-  int bpp;
 
   GLuint tex_id;
 
   int rows, cols;
-
-  char * text_buffer;
-
-  GLubyte * fg;
-  GLubyte * bg;
+  GLubyte * text_buffer;
 
   int age;
 };

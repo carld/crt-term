@@ -32,6 +32,11 @@ static int draw_cb(struct tsm_screen *screen, uint32_t id,
 {
   uint8_t fg[4], bg[4];
   struct display *disp = (struct display *)data;
+  int skip;
+
+  skip = age && disp->age && age <= disp->age;
+
+  if (skip) return 0;
 
   if (attr->inverse) {
     fg[0] = attr->br; fg[1] = attr->bg; fg[2] = attr->bb; fg[3] = 255;
@@ -126,9 +131,7 @@ int main(int argc, char *argv[], char *envp[])
   glfwSetKeyCallback(window, key_callback);
   x_display = glfwGetX11Display();
   while (!glfwWindowShouldClose(window)) {
-   
     shl_pty_dispatch(terminal->pty); 
-
     display->age = tsm_screen_draw(terminal->screen, draw_cb, display);
 
     display_update(display);
