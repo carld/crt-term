@@ -59,8 +59,8 @@ static void key_callback(GLFWwindow* window, int key /*glfw*/, int scancode, int
 
   if (action == GLFW_RELEASE) return;
 
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, GL_TRUE);
+//  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+//    glfwSetWindowShouldClose(window, GL_TRUE);
   if (mods & GLFW_MOD_CONTROL)  m |= TSM_CONTROL_MASK;
   if (mods & GLFW_MOD_SHIFT) m |= TSM_SHIFT_MASK;
   if (mods & GLFW_MOD_ALT)   m |= TSM_ALT_MASK;
@@ -80,7 +80,7 @@ int main(int argc, char *argv[], char *envp[])
   struct terminal *terminal = NULL;
   struct display *display = NULL;
   GLfloat width = 1280, height = 800;
-  GLfloat rot = 5, rotd = 0.1;
+  GLfloat rot = -2, rotd = 0.1;
 
   if (!glfwInit())
     return -1;
@@ -138,7 +138,7 @@ int main(int argc, char *argv[], char *envp[])
 #if ORTHO
 #else
     glRotatef(rot, 1.0,0.0,0.0);
-    glTranslatef(0,0,-(display->width * 0.75)); 
+    glTranslatef(0,0,-(display->width * 0.60)); 
     glTranslatef(-(display->width * 0.5),-(display->height * 0.5),0); 
 #endif
     glPolygonMode(GL_FRONT,GL_LINE);
@@ -155,9 +155,9 @@ int main(int argc, char *argv[], char *envp[])
     glfwSwapBuffers(window);
     glfwPollEvents();
     usleep(50000);
-    if (rot >= 3) rotd = -0.1;
-    if (rot <= -3) rotd = +0.1;
-    rot += rotd;
+//    if (rot >= 3) rotd = -0.1;
+//    if (rot <= -3) rotd = +0.1;
+//    rot += rotd;
   }
   glfwDestroyWindow(window);
   glfwTerminate();
