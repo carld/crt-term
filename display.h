@@ -1,6 +1,4 @@
 
-struct terminal;
-
 struct display {
   struct bdf_font *font;
 

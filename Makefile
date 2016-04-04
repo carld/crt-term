@@ -14,10 +14,9 @@ GIT = /usr/bin/git
 CC = gcc
 
 CFLAGS += -g -Wall -O2  -D_GNU_SOURCE
-#CFLAGS += -I../soil/src
 CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
 CFLAGS += -DORTHO
-LFLAGS += -lGLEW -lglfw -lGL -lGLU -lm  -lX11  -lxkbcommon
+LFLAGS += -lGLEW -lglfw -lGL -lGLU -lm  -lxkbcommon -lX11
 
 TSM = $(wildcard libtsm/src/*.c) $(wildcard libtsm/external/*.c)
 SHL = libshl/src/shl_pty.c

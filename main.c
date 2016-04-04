@@ -117,7 +117,7 @@ int main(int argc, char *argv[], char *envp[])
 #if ORTHO
   display_create(&display, width * 0.5, height * 0.50, fontfile);
 #else
-  display_create(&display, width * 0.33, height * 0.50, fontfile);
+  display_create(&display, width * 0.45, height * 0.50, fontfile);
 #endif
   terminal_create(&terminal, display->width / display->font->bbox.width, display->height / display->font->bbox.height);  // 9x15.bdf
 
@@ -155,7 +155,7 @@ int main(int argc, char *argv[], char *envp[])
 #if ORTHO
 #else
     glRotatef(rot, 1.0,0.0,0.0);
-    glTranslatef(0,0,-(display->width * 0.60)); 
+    glTranslatef(0,0,-(display->width * 0.50)); 
     glTranslatef(-(display->width * 0.5),-(display->height * 0.5),0); 
 #endif
     glPolygonMode(GL_FRONT,GL_LINE);
@@ -181,7 +181,7 @@ int main(int argc, char *argv[], char *envp[])
 
     glfwSwapBuffers(window);
     glfwPollEvents();
-    usleep(50000);
+    usleep(20000);
 //    if (rot >= 3) rotd = -0.1;
 //    if (rot <= -3) rotd = +0.1;
 //    rot += rotd;
