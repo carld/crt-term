@@ -77,10 +77,10 @@ void terminal_create(struct terminal **termp, int w, int h) {
     perror("fork problem");
   } else if (term->pid != 0 ) {
     /* parent, pty master */
+#if 0
     int fd = shl_pty_get_fd(term->pty);
     unsigned oflags = 0;
     /* enable SIGIO signal for this process when it has a ready file descriptor */
-#if 0
     signal(SIGIO, &io_handler);
     fcntl(fd, F_SETOWN, getpid(  ));
     oflags = fcntl(fd, F_GETFL);

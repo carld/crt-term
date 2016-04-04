@@ -2,20 +2,20 @@
 struct display {
   struct bdf_font *font;
 
-  GLuint font_width, font_height;
-  GLushort *font_pixels;
+  unsigned int font_width, font_height;
+  unsigned short *font_pixels;
   int font_pixels_size;
 
-  GLuint width, height;
-  GLushort * pixels;
-  GLushort * fg;
-  GLushort * bg;
+  unsigned int width, height;
+  unsigned short * pixels;
+  unsigned short * fg;
+  unsigned short * bg;
   int pixels_size;
 
-  GLuint tex_id;
+  unsigned int tex_id;
 
   int rows, cols;
-  GLubyte * text_buffer;
+  unsigned char * text_buffer;
 
   int age;
 };

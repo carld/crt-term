@@ -15,14 +15,14 @@ CC = gcc
 
 CFLAGS += -g -Wall -O2  -D_GNU_SOURCE
 CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
-CFLAGS += -DORTHO
-LFLAGS += -lGLEW -lglfw -lGL -lGLU -lm  -lxkbcommon -lX11
+LFLAGS += -lglfw -lGLU -lGL -lGLEW -lm  -lxkbcommon -lX11
 
 TSM = $(wildcard libtsm/src/*.c) $(wildcard libtsm/external/*.c)
 SHL = libshl/src/shl_pty.c
 
 SRC = $(SHL) $(TSM)
-SRC += main.c display.c font/bdf.c terminal.c
+SRC += main.c display.c font/bdf.c terminal.c 
+SRC += shader.c
 OBJ = $(SRC:.c=.o)
 BIN = app
 

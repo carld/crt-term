@@ -1,5 +1,3 @@
-#include <GLFW/glfw3.h>
-#include <GL/glu.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -29,8 +27,8 @@ static int display_pixels_index(struct display *disp, int x, int y) {
   return x + w * y;
 }
 
-static GLushort make_pixel16(GLubyte r, GLubyte g, GLubyte b, GLubyte a) {
-  GLushort p = 0;
+static unsigned short make_pixel16(unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
+  unsigned short p = 0;
   p |= (r >> 4) << 12;
   p |= (g >> 4) << 8; 
   p |= (b >> 4) << 4;
@@ -38,26 +36,8 @@ static GLushort make_pixel16(GLubyte r, GLubyte g, GLubyte b, GLubyte a) {
   return p;
 }
 
-static const GLushort white_pixel = 0xffff;
-static const GLushort black_pixel = 0x000f;
-
-#if 1
-/* for debugging */
-static void display_dump_glyph(struct display *disp, int encoding) {
-  int x, y;
-  int index = font_pixels_encoding_index(disp, encoding);
-  int w = disp->font->bbox.width;
-  printf("dumping glyph %d at %d\n", encoding, index);
-  for(y = 0; y < disp->font->bbox.height; y++ ) {
-    for(x = 0; x < disp->font->bbox.width; x++ ) {
-      int offset = x + y * w;
-      int pixel = disp->font_pixels[index + offset];
-      printf("%02X", pixel);
-    }
-    printf("\n");
-  }
-}
-#endif
+static const unsigned short white_pixel = 0xffff;
+static const unsigned short black_pixel = 0x000f;
 
 /* turn encoded text buffer into rendered glyph pixels */
 void display_update(struct display *disp) {
@@ -95,40 +75,22 @@ void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4]
   disp->bg[index] = make_pixel16(bg[0],bg[1],bg[2],bg[3]);
 }
 
-void display_update_texture(struct display *disp) {
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
-  glBindTexture(GL_TEXTURE_2D, disp->tex_id);
-  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
-    disp->width, disp->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, disp->pixels);
-}
-
 static void display_load_bdf(struct display *disp, const char *filename) {
   FILE *fp = NULL;
   int lines = 0;
   int ngly = 0;
   int total_chars = 255;
 
-  printf("Opening '%s'\n", filename);
   fp = fopen(filename, "r");
   assert(fp != NULL);
   bdf_read(fp, &disp->font, &lines);
   bdf_sort_glyphs(disp->font);
   fclose(fp);
 
-  printf("white: %04X  black: %04X\n", white_pixel, black_pixel);
-
   disp->font_width = disp->font->bbox.width * total_chars;
   disp->font_height = disp->font->bbox.height;
   disp->font_pixels_size = disp->font->bbox.width * disp->font->bbox.height * total_chars;
-  disp->font_pixels = calloc(disp->font_pixels_size, sizeof (GLushort));
+  disp->font_pixels = calloc(disp->font_pixels_size, sizeof (unsigned short));
 
   for(ngly = 0; ngly < total_chars; ngly++) {
     struct bdf_glyph *glyph = bdf_find_glyph(disp->font, ngly, 0);
@@ -140,7 +102,7 @@ static void display_load_bdf(struct display *disp, const char *filename) {
         int colbyte = col / 8;
         int colbits  = col % 8;
         unsigned char bmp = glyph->bitmap[row * ncolbytes + colbyte];
-        GLushort pixel = ((bmp>>(7-colbits)) & 1) == 1 ? white_pixel : black_pixel;
+        unsigned short pixel = ((bmp>>(7-colbits)) & 1) == 1 ? white_pixel : black_pixel;
         int w = disp->font->bbox.width;
         int h = disp->font->bbox.height;
         int x = col;
@@ -175,23 +137,20 @@ void display_create(struct display ** dispp, int x, int y, const char *filename)
   disp->width = nearest_power_of_two(x); // needs to be a power of two to be a texture?
   disp->height = nearest_power_of_two(y);
   disp->pixels_size = disp->width * disp->height;
-  printf("texture width %d height %d\n", disp->width, disp->height);
 
-  disp->pixels = calloc(disp->pixels_size, sizeof (GLushort));
+  printf("texture      %d x %d\n", disp->width, disp->height);
+
+  disp->pixels = calloc(disp->pixels_size, sizeof (unsigned short));
   assert(disp->pixels);
 
   disp->rows = disp->height / disp->font->bbox.height;
   disp->cols = disp->width / disp->font->bbox.width;
-  disp->text_buffer = calloc(disp->rows * disp->cols, sizeof (GLubyte));
+  disp->text_buffer = calloc(disp->rows * disp->cols, sizeof (unsigned char));
   assert(disp->text_buffer);
-  disp->fg = calloc(disp->rows * disp->cols, sizeof (GLushort));
+  disp->fg = calloc(disp->rows * disp->cols, sizeof (unsigned short));
   assert(disp->fg);
-  disp->bg = calloc(disp->rows * disp->cols, sizeof (GLushort));
+  disp->bg = calloc(disp->rows * disp->cols, sizeof (unsigned short));
   assert(disp->bg);
-
-  glGenTextures(1, & disp->tex_id);
-
-  printf("Loaded font\n");
 }
 
 

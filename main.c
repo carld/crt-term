@@ -1,7 +1,11 @@
+#define GLEW_STATIC
+#include <GL/glew.h>
+
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_GLX
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
+
 #include <GL/glu.h>
 
 #include <xkbcommon/xkbcommon.h>
@@ -20,8 +24,95 @@
 
 #include "terminal.h"
 #include "display.h"
+#include "shader.h"
 
-Display *x_display;
+float vertices[] = {
+    //  Position  Color             Texcoords
+    -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Top-left
+     1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // Top-right
+     1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // Bottom-right
+    -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  // Bottom-left
+};
+
+GLuint elements[] = {
+    0, 1, 2,
+    2, 3, 0
+};
+
+GLuint create_program(struct shader *shaders, int l) {
+  GLuint program;
+  program = shader_program(shaders, l);
+  glBindFragDataLocation(program, 0, "outColor");
+  glLinkProgram(program);
+
+  glUseProgram(program);
+
+  GLint posAttrib = glGetAttribLocation(program, "position");
+  glEnableVertexAttribArray(posAttrib);
+  glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 7*sizeof(float), 0);
+
+  GLint colAttrib = glGetAttribLocation(program, "color");
+  glEnableVertexAttribArray(colAttrib);
+  glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 7*sizeof(float), (void*)(2*sizeof(float)));
+
+  GLint texAttrib = glGetAttribLocation(program, "texcoord");
+  glEnableVertexAttribArray(texAttrib);
+  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 7*sizeof(float), (void*)(5*sizeof(float)));
+
+  return program;
+}
+
+void setup() {
+  GLuint vertexBuffer;
+  glGenBuffers(1, &vertexBuffer); // vbo
+  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  GLuint vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
+  GLuint tex;
+  glGenTextures(1, &tex);
+  glBindTexture(GL_TEXTURE_2D, tex);
+
+  GLuint ebo;
+  glGenBuffers(1, &ebo);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+
+  glClearColor(0.1,0.1,0.1,1.0);
+  glColor4ub(255,255,255,255);
+}
+
+void update_texture(struct display *disp) {
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+  glBindTexture(GL_TEXTURE_2D, disp->tex_id);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+    disp->width, disp->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, disp->pixels);
+}
+
+void render() {
+  glClear(GL_COLOR_BUFFER_BIT);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+void info() {
+  printf("OpenGL      %s\n", glGetString(GL_VERSION));
+  printf("GLSL        %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+  printf("Vendor      %s\n", glGetString(GL_VENDOR));
+  printf("Renderer    %s\n", glGetString(GL_RENDERER));
+  //printf("Extensions\n%s\n", glGetString(GL_EXTENSIONS));
+}
+
+static Display *x_display = NULL;
 
 static int draw_cb(struct tsm_screen *screen, uint32_t id,
                    const uint32_t *ch, size_t len,
@@ -78,45 +169,62 @@ static void key_callback(GLFWwindow* window, int key /*glfw*/, int scancode, int
 
 int main(int argc, char *argv[], char *envp[])
 {
-  GLFWwindow* window;
-  GLFWmonitor* monitor;
-  const GLFWvidmode* mode;
+  GLFWwindow *window;
+  GLFWmonitor *monitor;
+  const GLFWvidmode *mode;
   struct terminal *terminal = NULL;
   struct display *display = NULL;
-  GLfloat width = 1280, height = 800;
-  GLfloat rot = -2, rotd = 0.1;
+  GLfloat screenSize[2] = {640,480};
+  GLfloat displaySize[2] = {640,350};
+  GLuint program;
   const char *fontfile = "9x15.bdf";
   int opt;
+  struct shader shaders[2];
 
-  while ((opt = getopt(argc, argv, "f:")) != -1) {
+  shaders[0].filename = "crt-lottes.glsl";
+  shaders[0].type     = GL_FRAGMENT_SHADER;
+  shaders[1].filename = "vertex.glsl";
+  shaders[1].type     = GL_VERTEX_SHADER;
+
+  while ((opt = getopt(argc, argv, "f:s:")) != -1) {
     switch (opt) {
     case 'f':
-       fontfile = optarg;
-       break;
+      fontfile = optarg;
+      break;
+    case 's':
+      shaders[0].filename = optarg;
+      break;    
     default: /* '?' */
-       fprintf(stderr, "Usage: %s [-f bdf file]\n", argv[0]);
+       fprintf(stderr, "Usage: %s [-f bdf file] [-s glsl shader] \n", argv[0]);
        exit(EXIT_FAILURE);
     }
   }
 
-#if ORTHO
-  display_create(&display, width * 0.5, height * 0.50, fontfile);
-#else
-  display_create(&display, width * 0.45, height * 0.50, fontfile);
-#endif
-  terminal_create(&terminal, display->width / display->font->bbox.width, display->height / display->font->bbox.height);  // 9x15.bdf
+  /* displaySize is the size of the CRT monitor / character terminal texture */
+  display_create(&display, displaySize[0], displaySize[1], fontfile);
+  terminal_create(&terminal, (display->width / display->font->bbox.width)-1, (display->height / display->font->bbox.height)-1);
 
   if (!glfwInit())
     return -1;
- 
+
   monitor = glfwGetPrimaryMonitor();
-  mode = glfwGetVideoMode(monitor); 
+  mode    = glfwGetVideoMode(monitor); 
+
+  /* screenSize is the size of the window being rendered to */
+  screenSize[0] = mode->width;
+  screenSize[1] = mode->height;
+
   glfwWindowHint(GLFW_RED_BITS, mode->redBits);
   glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
   glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
   glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 
-  window = glfwCreateWindow(mode->width, mode->height, "Hello World", monitor, NULL);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+  window = glfwCreateWindow(screenSize[0], screenSize[1], "Hello World", monitor, NULL);
   if (!window) {
     glfwTerminate();
     return -1;
@@ -124,67 +232,41 @@ int main(int argc, char *argv[], char *envp[])
 
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
-
   glfwSetWindowUserPointer(window, terminal);
   glfwSwapInterval(1);
   glfwSetKeyCallback(window, key_callback);
   x_display = glfwGetX11Display();
+
+  info();
+
+  glewExperimental = GL_TRUE;
+  GLenum err = glewInit();
+  if (err != GLEW_OK) exit(1);
+  if (!GLEW_VERSION_3_2) exit(1);
+
+  setup();
+  glGenTextures(1, & display->tex_id);
+  program = create_program(shaders, 2);
+  GLint sourceSize = glGetUniformLocation(program, "sourceSize");
+  GLint targetSize = glGetUniformLocation(program, "targetSize");
+  glUniform2f(sourceSize, display->width, display->height);
+  glUniform2f(targetSize, screenSize[0], screenSize[1]);
+
   while (!glfwWindowShouldClose(window)) {
+
     shl_pty_dispatch(terminal->pty); 
+
     display->age = tsm_screen_draw(terminal->screen, draw_cb, display);
+
     display_update(display);
-    display_update_texture(display);
+    update_texture(display);
 
-    glViewport(0, 0, (GLsizei) width, (GLsizei) height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-#if ORTHO
-    glOrtho(0, width, 0, height, 0, 100);
-#else
-    gluPerspective(90, 1.0 /*width / height*/ , 0.0, 1024.0);
-#endif
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glClearColor(0.1,0.1,0.1,1.0);
-    glColor4ub(255,255,255,255);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_TEXTURE_2D);
-    //glEnable(GL_DEPTH_TEST);
-    //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-    glBindTexture(GL_TEXTURE_2D, display->tex_id);
-#if ORTHO
-#else
-    glRotatef(rot, 1.0,0.0,0.0);
-    glTranslatef(0,0,-(display->width * 0.50)); 
-    glTranslatef(-(display->width * 0.5),-(display->height * 0.5),0); 
-#endif
-    glPolygonMode(GL_FRONT,GL_LINE);
-    glBegin(GL_QUADS);
-#if ORTHO
-    GLint xoff = (width - display->width) * 0.5, yoff = (height - display->height) * 0.5;
-      glTexCoord2i(0.0, 1.0); glVertex3i(xoff, yoff, 0.0);
-      glTexCoord2i(0.0, 0.0); glVertex3i(xoff, yoff + display->height, 0.0);
-      glTexCoord2i(1.0, 0.0); glVertex3i(xoff + display->width, yoff + display->height, 0.0);
-      glTexCoord2i(1.0, 1.0); glVertex3i(xoff + display->width, yoff, 0.0);
-#else
-      glTexCoord2f(0.0, 1.0); glVertex3f(0, 0, 0.0);
-      glTexCoord2f(0.0, 0.0); glVertex3f(0, display->height, 0.0);
-      glTexCoord2f(1.0, 0.0); glVertex3f(display->width, display->height, 0.0);
-      glTexCoord2f(1.0, 1.0); glVertex3f(display->width, 0.0, 0.0);
-#endif
-
-    glEnd();
-//    glRecti(-100,-100,100,100);
-    glFlush();
-    glDisable(GL_TEXTURE_2D);
+    glActiveTexture(GL_TEXTURE0);
+    render();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
     usleep(40000);
-//    if (rot >= 3) rotd = -0.1;
-//    if (rot <= -3) rotd = +0.1;
-//    rot += rotd;
   }
   glfwDestroyWindow(window);
   glfwTerminate();
