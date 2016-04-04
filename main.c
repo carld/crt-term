@@ -101,7 +101,7 @@ int main(int argc, char *argv[], char *envp[])
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
-  display_create(&display, width * 0.5, height * 1.0, "9x15.bdf");
+  display_create(&display, width * 0.33, height * 0.50, "9x15.bdf");
   terminal_create(&terminal, display->width / display->font->bbox.width, display->height / display->font->bbox.height);  // 9x15.bdf
 
   glfwSetWindowUserPointer(window, terminal);
