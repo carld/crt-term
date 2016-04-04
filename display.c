@@ -189,9 +189,6 @@ void display_create(struct display ** dispp, int x, int y, const char *filename)
   glGenTextures(1, & disp->tex_id);
 
   printf("Loaded font\n");
-  display_update(disp);
-  display_update_texture(disp);
-  printf("Updated display\n");
 }
 
 

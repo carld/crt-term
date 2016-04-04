@@ -81,6 +81,19 @@ int main(int argc, char *argv[], char *envp[])
   struct display *display = NULL;
   GLfloat width = 1280, height = 800;
   GLfloat rot = -2, rotd = 0.1;
+  const char *fontfile = "9x15.bdf";
+  int opt;
+
+  while ((opt = getopt(argc, argv, "f:")) != -1) {
+    switch (opt) {
+    case 'f':
+       fontfile = optarg;
+       break;
+    default: /* '?' */
+       fprintf(stderr, "Usage: %s [-f bdf file]\n", argv[0]);
+       exit(EXIT_FAILURE);
+    }
+  }
 
   if (!glfwInit())
     return -1;
@@ -101,7 +114,7 @@ int main(int argc, char *argv[], char *envp[])
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1);
 
-  display_create(&display, width * 0.33, height * 0.50, "9x15.bdf");
+  display_create(&display, width * 0.33, height * 0.50, fontfile);
   terminal_create(&terminal, display->width / display->font->bbox.width, display->height / display->font->bbox.height);  // 9x15.bdf
 
   glfwSetWindowUserPointer(window, terminal);
