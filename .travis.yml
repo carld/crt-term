@@ -7,7 +7,6 @@ addons:
     - libgl1-mesa-swx11-dev
     - libglu1-mesa-dev
     - libglew-dev
-    - libm-dev
     - libxkbcommon-dev
-    - libX11-dev
+    - libX11-common
 script: make
