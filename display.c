@@ -113,16 +113,6 @@ static void display_load_bdf(struct display *disp, const char *filename) {
   }
 }
 
-static unsigned int nearest_power_of_two(unsigned int v) {
-  v--;
-  v |= v >> 1;
-  v |= v >> 2;
-  v |= v >> 4;
-  v |= v >> 8;
-  v |= v >> 16;
-  return v++;
-}
-
 void display_create(struct display ** dispp, int x, int y, const char *filename) {
   struct display *disp = NULL;
   if (*dispp==NULL) *dispp = (struct display *) malloc(sizeof (struct display));
@@ -132,11 +122,9 @@ void display_create(struct display ** dispp, int x, int y, const char *filename)
 
   display_load_bdf(disp, filename);
 
-  disp->width = nearest_power_of_two(x); // needs to be a power of two to be a texture?
-  disp->height = nearest_power_of_two(y);
+  disp->width = x;
+  disp->height = y;
   disp->pixels_size = disp->width * disp->height;
-
-  printf("texture      %d x %d\n", disp->width, disp->height);
 
   disp->pixels = calloc(disp->pixels_size, sizeof (unsigned short));
   assert(disp->pixels);

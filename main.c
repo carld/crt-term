@@ -171,8 +171,8 @@ int main(int argc, char *argv[], char *envp[])
   const GLFWvidmode *mode;
   struct terminal *terminal = NULL;
   struct display *display = NULL;
-  GLfloat screenSize[2] = {640,480};
-  GLfloat displaySize[2] = {640,350};
+  GLuint screenSize[2] = {1024,768};
+  GLuint displaySize[2] = {640,350};
   GLuint program;
   const char *fontfile = "9x15.bdf";
   int opt;
@@ -226,6 +226,8 @@ int main(int argc, char *argv[], char *envp[])
     glfwTerminate();
     return -1;
   }
+
+  printf("Screen size %d x %d (%d x %d)\n", screenSize[0], screenSize[1], display->width, display->height);
 
   glfwMakeContextCurrent(window);
   glfwSetWindowUserPointer(window, terminal);
