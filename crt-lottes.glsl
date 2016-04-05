@@ -27,12 +27,12 @@ vec2 res=sourceSize.xy;
 // Hardness of scanline.
 //  -8.0 = soft
 // -16.0 = medium
-float hardScan=-8.0;
+float hardScan=-24.0;
 
 // Hardness of pixels in scanline.
 // -2.0 = soft
 // -4.0 = hard
-float hardPix=-3.0;
+float hardPix=-4.0;
 
 // Display warp.
 // 0.0 = none
@@ -139,10 +139,9 @@ vec3 Mask(vec2 pos){
   return mask;}    
 
 void main() {
-  // gl_FragCoord
   vec2 pos = gl_FragCoord.xy/targetSize.xy;
   pos.y = 1.0 - pos.y; // invert y
-  hardScan=-12.0;
+//  hardScan=-12.0;
 //      maskDark=maskLight;
   pos=Warp(pos);
   outColor.rgb=Tri(pos)*Mask(gl_FragCoord.xy);    
