@@ -3,10 +3,17 @@ sudo: false
 addons:
   apt:
     packages:
-    - libglfw-dev
     - libgl1-mesa-dev
     - libglu1-mesa-dev
     - libglew-dev
     - libxkbcommon-dev
     - libx11-dev
-script: make
+script:
+  - git clone https://github.com/glfw/glfw.git
+  - cd glfw
+  - git checkout 3.0.3
+  - cmake -DBUILD_SHARED_LIBS=ON
+  - make
+  - sudo make install
+  - cd ..
+  - make
