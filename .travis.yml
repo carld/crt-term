@@ -4,7 +4,7 @@ addons:
   apt:
     packages:
     - libglfw3-dev
-    - libgl1-mesa-swx11-dev
+    - libgl1-mesa-dev
     - libglu1-mesa-dev
     - libglew-dev
     - libxkbcommon-dev
