@@ -9,6 +9,12 @@ addons:
     - libxkbcommon-dev
     - libx11-dev
     - libxxf86vm-dev
-    - libglfw3-dev
 script:
+  - git clone https://github.com/glfw/glfw.git
+  - cd glfw
+  - git checkout 3.0.3
+  - cmake -DBUILD_SHARED_LIBS=ON
+  - make
+  - make install
+  - cd ..
   - make
