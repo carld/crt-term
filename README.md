@@ -8,5 +8,5 @@ Uses shader to simulate CRT monitor.
 
 # Options
 
-    ./app [-f bdf font file] [-s fragment shader file]
+    ./og-term [-f bdf font file] [-s fragment shader file]
 

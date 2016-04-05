@@ -1,15 +1,13 @@
+/* functions for blitting bitmap characters onto a surface 
+ * Copyright (C) 2016 A. Carl Douglas
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include "font/bdf.h"
 
-#include "libtsm.h"
-#include "terminal.h"
-
 #include "display.h"
-
-// -misc-fixed-medium-r-normal-*-15-*-*-*-*-*
-
 
 /* return index of top left pixel for given character in font pixels */
 static int font_pixels_encoding_index(struct display *disp, int encoding) {
@@ -143,8 +141,8 @@ void display_create(struct display ** dispp, int x, int y, const char *filename)
   disp->pixels = calloc(disp->pixels_size, sizeof (unsigned short));
   assert(disp->pixels);
 
-  disp->rows = disp->height / disp->font->bbox.height;
-  disp->cols = disp->width / disp->font->bbox.width;
+  disp->rows = (disp->height / disp->font->bbox.height)-1;
+  disp->cols = (disp->width / disp->font->bbox.width)-1;
   disp->text_buffer = calloc(disp->rows * disp->cols, sizeof (unsigned char));
   assert(disp->text_buffer);
   disp->fg = calloc(disp->rows * disp->cols, sizeof (unsigned short));

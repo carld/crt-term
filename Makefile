@@ -24,7 +24,7 @@ SRC = $(SHL) $(TSM)
 SRC += main.c display.c font/bdf.c terminal.c 
 SRC += shader.c
 OBJ = $(SRC:.c=.o)
-BIN = app
+BIN = og-term
 
 .PHONY: clean
 

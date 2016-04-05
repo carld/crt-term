@@ -6,8 +6,6 @@
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
 
-#include <GL/glu.h>
-
 #include <xkbcommon/xkbcommon.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
@@ -17,7 +15,6 @@
 #include <assert.h>
 
 #include "font/bdf.h"
-
 #include "libtsm.h"
 #include "shl_pty.h"
 #include "external/xkbcommon-keysyms.h"
@@ -202,7 +199,7 @@ int main(int argc, char *argv[], char *envp[])
 
   /* displaySize is the size of the CRT monitor / character terminal texture */
   display_create(&display, displaySize[0], displaySize[1], fontfile);
-  terminal_create(&terminal, (display->width / display->font->bbox.width)-1, (display->height / display->font->bbox.height)-1);
+  terminal_create(&terminal, display->cols, display->rows);
 
   if (!glfwInit())
     return -1;
@@ -224,14 +221,13 @@ int main(int argc, char *argv[], char *envp[])
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-  window = glfwCreateWindow(screenSize[0], screenSize[1], "Hello World", monitor, NULL);
+  window = glfwCreateWindow(screenSize[0], screenSize[1], argv[0], monitor, NULL);
   if (!window) {
     glfwTerminate();
     return -1;
   }
 
   glfwMakeContextCurrent(window);
-  glfwSwapInterval(1);
   glfwSetWindowUserPointer(window, terminal);
   glfwSwapInterval(1);
   glfwSetKeyCallback(window, key_callback);
