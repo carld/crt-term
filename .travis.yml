@@ -4,9 +4,10 @@ addons:
   apt:
     packages:
     - libglfw-dev
-    - libGL
+    - libgl1-mesa-swx11-dev
+    - libglu1-mesa-dev
     - libglew-dev
-    - libm
-    - libxkbcommon
-    - libX11
+    - libm-dev
+    - libxkbcommon-dev
+    - libX11-dev
 script: make
