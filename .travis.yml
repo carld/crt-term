@@ -3,7 +3,7 @@ sudo: false
 addons:
   apt:
     packages:
-    - libglfw3-dev
+    - libglfw3
     - libgl1-mesa-dev
     - libglu1-mesa-dev
     - libglew-dev
