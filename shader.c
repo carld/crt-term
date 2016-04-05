@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #include <GL/glew.h>
 
@@ -12,18 +13,24 @@
 static GLchar * read_file(const GLchar *fname, GLint *len) {
   struct stat buf;
   int fd = -1;
-  GLchar *src = 0;
+  GLchar *src = NULL;
   size_t bytes = 0;
-  if (stat(fname, &buf) != 0) goto error;
+
+  if (stat(fname, &buf) != 0) 
+    goto error;
   fd = open(fname, O_RDWR);
-  if (fd < 0) goto error;
-  src = malloc(sizeof (GLubyte) * buf.st_size + 1);
+  if (fd < 0) 
+    goto error;
+  src = calloc(buf.st_size + 1, sizeof (GLchar));
+  assert(src);
   bytes = read(fd, src, buf.st_size);
-  if (bytes < 0) goto error;
-  if (len) *len = buf.st_size;
-  src[bytes] = '\0';
+  if (bytes < 0) 
+    goto error;
+  if (len) 
+    *len = buf.st_size;
   close(fd);
   return src;
+
 error:
   perror(fname);
   exit(-2);

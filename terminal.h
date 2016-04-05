@@ -5,6 +5,7 @@ struct terminal {
   struct tsm_screen *screen;
   struct tsm_screen_attr *attr;
 
+  /* process id of the child process (slave side of psuedo terminal) */
   int pid;
 };
 
