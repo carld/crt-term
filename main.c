@@ -172,7 +172,7 @@ int main(int argc, char *argv[], char *envp[])
   struct terminal *terminal = NULL;
   struct display *display = NULL;
   GLuint screenSize[2] = {1024,768};
-  GLuint displaySize[2] = {640,350};
+  GLuint displaySize[2] = {800,400};
   GLuint program;
   const char *fontfile = "9x15.bdf";
   int opt;
