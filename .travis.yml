@@ -1,0 +1,13 @@
+language: c
+sudo: false
+addons:
+  apt:
+    packages:
+    - libglfw
+    - libGLU
+    - libGL
+    - libGLEW
+    - libm
+    - libxkbcommon
+    - libX11
+script: make
