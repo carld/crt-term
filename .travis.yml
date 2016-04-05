@@ -3,10 +3,9 @@ sudo: false
 addons:
   apt:
     packages:
-    - libglfw
-    - libGLU
+    - libglfw-dev
     - libGL
-    - libGLEW
+    - libglew-dev
     - libm
     - libxkbcommon
     - libX11
