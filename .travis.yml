@@ -8,7 +8,7 @@ addons:
     - libglew-dev
     - libxkbcommon-dev
     - libx11-dev
-    - libXxf86vm-dev
+    - libxxf86vm-dev
 script:
   - git clone https://github.com/glfw/glfw.git
   - cd glfw
