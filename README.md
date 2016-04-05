@@ -4,7 +4,7 @@
 
 A libtsm based terminal emulator that renders a BDF font to an OpenGL texture.
 
-Uses shader to simulate CRT monitor.
+Uses shaders to simulate CRT monitor.
 
 ![Screenshot](/screen02.png?raw=true)
 

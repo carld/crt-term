@@ -14,12 +14,12 @@
 extern char **environ;
 
 void hup_handler(int s) {
-  printf("Signal received: %s\n", strsignal(s));
+  printf("Signal: %s\n", strsignal(s));
   exit(1);
 }
 
 void io_handler(int s) {
-  printf("got %s\n", strsignal(s));
+  printf("%s\n", strsignal(s));
 }
 
 /* called when data has been read from the fd slave -> master  (vte input )*/

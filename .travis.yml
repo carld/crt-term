@@ -8,5 +8,5 @@ addons:
     - libglu1-mesa-dev
     - libglew-dev
     - libxkbcommon-dev
-    - x11-common
+    - libx11-dev
 script: make

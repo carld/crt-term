@@ -227,7 +227,10 @@ int main(int argc, char *argv[], char *envp[])
     return -1;
   }
 
-  printf("Screen size %d x %d (%d x %d)\n", screenSize[0], screenSize[1], display->width, display->height);
+  printf("Resolution  %d x %d (%d x %d) [%d x %d]\n",
+    screenSize[0], screenSize[1],
+    display->width, display->height,
+    display->cols, display->rows);
 
   glfwMakeContextCurrent(window);
   glfwSetWindowUserPointer(window, terminal);
