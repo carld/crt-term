@@ -206,7 +206,7 @@ int main(int argc, char *argv[], char *envp[])
   shaders[1].filename = "vertex.glsl";
   shaders[1].type     = GL_VERTEX_SHADER;
 
-  while ((opt = getopt(argc, argv, "f:s:d")) != -1) {
+  while ((opt = getopt(argc, argv, "f:s:g:dh")) != -1) {
     switch (opt) {
     case 'f':
       fontfile = optarg;
@@ -217,9 +217,14 @@ int main(int argc, char *argv[], char *envp[])
     case 'd':
       dot_stretch ^= 1;
       break;      
+    case 'g':
+      displaySize[0] = atoi(strtok(optarg,"x"));
+      displaySize[1] = atoi(strtok(NULL,"x"));
+      break;
+    case 'h':
     default: /* '?' */
-       fprintf(stderr, "Usage: %s [-f bdf file] [-s glsl shader] [-d] \n", argv[0]);
-       exit(EXIT_FAILURE);
+       printf("Usage: %s [-f bdf file] [-s glsl shader] [-g width x height] [-d] \n", argv[0]);
+       exit(EXIT_SUCCESS);
     }
   }
 
