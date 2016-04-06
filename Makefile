@@ -33,7 +33,7 @@ BIN = crt-term
 .c.o:  $(SRC)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(BIN): $(OBJ) 
+$(BIN): $(OBJ) glfw
 	$(CC) -o $@ $(OBJ)  $(LFLAGS)
 
 glfw:
