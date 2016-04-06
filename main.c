@@ -226,6 +226,8 @@ int main(int argc, char *argv[], char *envp[])
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
+  glfwWindowHint(GLFW_DECORATED, GL_FALSE);
+
   window = glfwCreateWindow(screenSize[0], screenSize[1], argv[0], monitor, NULL);
   if (!window) {
     glfwTerminate();
