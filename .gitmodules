@@ -4,3 +4,6 @@
 [submodule "libshl"]
 	path = libshl
 	url = https://github.com/dvdhrm/libshl.git
+[submodule "glfw"]
+	path = glfw
+	url = https://github.com/glfw/glfw.git

@@ -51,7 +51,7 @@ GLuint load_shader(struct shader *shader) {
   glShaderSource(shader->id, 1, &shader->src, &len);
   glCompileShader(shader->id);
   // can free shader->src now
-  printf("Compiled %s\n",shader->filename);
+  printf("Compiled        %s\n",shader->filename);
 
   glGetShaderiv(shader->id, GL_COMPILE_STATUS, &result);
   if (result == 0) {

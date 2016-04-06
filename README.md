@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/carld/og-term.png?branch=master)](https://travis-ci.org/carld/og-term)
+[![Build Status](https://travis-ci.org/carld/crt-term.png?branch=master)](https://travis-ci.org/carld/crt-term)
 
 # Terminal Window
 
@@ -10,12 +10,12 @@ Uses shaders to simulate CRT monitor.
 
 # Installation
 
-    git clone https://github.com/carld/og-term.git
+    git clone https://github.com/carld/crt-term.git
     git submodule init
     git submodule update
     make
 
 # Options
 
-    ./og-term [-f bdf font file] [-s fragment shader file]
+    ./crt-term [-f bdf font file] [-s fragment shader file]
 

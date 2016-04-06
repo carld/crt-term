@@ -103,10 +103,10 @@ void render() {
 }
 
 void info() {
-  printf("OpenGL      %s\n", glGetString(GL_VERSION));
-  printf("GLSL        %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-  printf("Vendor      %s\n", glGetString(GL_VENDOR));
-  printf("Renderer    %s\n", glGetString(GL_RENDERER));
+  printf("OpenGL          %s\n", glGetString(GL_VERSION));
+  printf("GLSL            %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+  printf("Vendor          %s\n", glGetString(GL_VENDOR));
+  printf("Renderer        %s\n", glGetString(GL_RENDERER));
   //printf("Extensions\n%s\n", glGetString(GL_EXTENSIONS));
 }
 
@@ -238,7 +238,7 @@ int main(int argc, char *argv[], char *envp[])
     return -1;
   }
 
-  printf("Resolution  %d x %d (%d x %d) [%d x %d]\n",
+  printf("Resolution      %d x %d, %d x %d, %d x %d\n",
     screenSize[0], screenSize[1],
     display->width, display->height,
     display->cols, display->rows);
@@ -247,6 +247,7 @@ int main(int argc, char *argv[], char *envp[])
   glfwSetWindowUserPointer(window, terminal);
   glfwSwapInterval(1);
   glfwSetKeyCallback(window, key_callback);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
   x_display = glfwGetX11Display();
 
