@@ -17,7 +17,7 @@ CFLAGS += -g -ggdb -Wall -D_GNU_SOURCE
 CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
 CFLAGS += -I./glfw/include
 LFLAGS += -lGLU -lGL -lGLEW -lm  -lxkbcommon -lX11 
-LFLAGS += ./glfw/src/libglfw3.a  -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor
+LFLAGS += glfw/src/libglfw3.a -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor
 
 TSM = $(wildcard libtsm/src/*.c) $(wildcard libtsm/external/*.c)
 SHL = libshl/src/shl_pty.c
@@ -33,16 +33,20 @@ BIN = crt-term
 .c.o:  $(SRC)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(BIN): $(OBJ) glfw
+$(BIN): glfw $(OBJ)
 	$(CC) -o $@ $(OBJ)  $(LFLAGS)
 
 glfw:
 	cd glfw; \
-	cmake BUILD_SHARED_LIBS=true .; \
+	cmake -DBUILD_SHARED_LIBS=ON \
+              -DBUILD_STATIC_LIBS=ON \
+              -DGLFW_BUILD_DOCS=OFF \
+              -DGLFW_BUILD_EXAMPLES=OFF \
+              -DGLFW_BUILD_TESTS=OFF .; \
 	make
 
 clean:
-	rm -vf $(BIN) $(OBJ)
 	cd glfw; make clean
+	rm -vf $(BIN) $(OBJ)
 
 
