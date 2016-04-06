@@ -1,0 +1,45 @@
+.\" groff -man -Tascii crt-term.1 | less
+.TH crt\-term 1 
+.SH "NAME"
+crt-term \- VT100 compatible terminal emulator
+.SH "SYNOPSIS"
+.B crt\-term 
+[
+.I \-f BDF font
+]
+[
+.I \-s shader
+]
+[
+.I \-d dot stretching
+]
+[
+.I \-g geometry
+]
+.SH "OPTIONS"
+.IP "BDF font"
+.br
+A Glyph Bitmap Distribution Format file.
+.IP "Shader"
+.br
+An OpenGL GLSL fragment shader program.
+.IP "Dot stretching"
+.br
+Toggles lone pixels becoming two, enabled by default.
+.IP "Geometry"
+.br
+Display resolution in pixels.
+.SH "DESCRIPTION"
+This program emulates DEC VT100 to VT520 terminals.
+.SH "EXAMPLE"
+crt\-term -g 640x350 -s shader.glsl -f font.bdf -d
+.SH "CREDITS"
+David Herrmann: libtsm and libshl
+.br
+Marcus Brinkman: BDF file parser from GNU Hurd source
+.br
+Timothy Lottes: Cathode Ray Tube scanline shader
+.br
+.SH "AUTHOR"
+A. Carl Douglas
+
