@@ -84,17 +84,25 @@ void terminal_create(struct terminal **termp, int w, int h) {
     perror("fork problem");
   } else if (term->pid != 0 ) {
     /* parent, pty master */
+    struct sigaction sa;
 
     /* enable SIGIO signal for this process when it has a ready file descriptor */
     int fd = shl_pty_get_fd(term->pty);
     unsigned oflags = 0;
-    signal(SIGIO, &io_handler);
+
+    sa.sa_handler = io_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    if (sigaction(SIGIO, &sa, NULL)==-1){
+      perror("could not install signal handler");
+      exit(-3);
+    }
+
     fcntl(fd, F_SETOWN, getpid());
     oflags = fcntl(fd, F_GETFL);
     fcntl(fd, F_SETFL, oflags | FASYNC);
 
     /* enable SIGCHD signal when it's child process exits */
-    struct sigaction sa;
     sa.sa_handler = hup_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;

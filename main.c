@@ -91,8 +91,8 @@ void update_texture(struct display *disp) {
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
     disp->width, disp->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, disp->pixels);
 }
@@ -177,18 +177,19 @@ int main(int argc, char *argv[], char *envp[])
   struct terminal *terminal = NULL;
   struct display *display = NULL;
   GLuint screenSize[2] = {1024,768};
-  GLuint displaySize[2] = {800,400};
+  GLuint displaySize[2] = {640,250};
   GLuint program;
   const char *fontfile = "9x15.bdf";
   int opt;
   struct shader shaders[2];
+  int dot_stretch = 0;
 
   shaders[0].filename = "crt-lottes.glsl";
   shaders[0].type     = GL_FRAGMENT_SHADER;
   shaders[1].filename = "vertex.glsl";
   shaders[1].type     = GL_VERTEX_SHADER;
 
-  while ((opt = getopt(argc, argv, "f:s:")) != -1) {
+  while ((opt = getopt(argc, argv, "f:s:d")) != -1) {
     switch (opt) {
     case 'f':
       fontfile = optarg;
@@ -196,14 +197,17 @@ int main(int argc, char *argv[], char *envp[])
     case 's':
       shaders[0].filename = optarg;
       break;    
+    case 'd':
+      dot_stretch = 1;
+      break;      
     default: /* '?' */
-       fprintf(stderr, "Usage: %s [-f bdf file] [-s glsl shader] \n", argv[0]);
+       fprintf(stderr, "Usage: %s [-f bdf file] [-s glsl shader] [-d] \n", argv[0]);
        exit(EXIT_FAILURE);
     }
   }
 
   /* displaySize is the size of the CRT monitor / character terminal texture */
-  display_create(&display, displaySize[0], displaySize[1], fontfile);
+  display_create(&display, displaySize[0], displaySize[1], fontfile, dot_stretch);
   terminal_create(&terminal, display->cols, display->rows);
 
   if (!glfwInit())

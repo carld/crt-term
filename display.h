@@ -32,6 +32,6 @@ struct display {
 };
 
 void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4], unsigned char bg[4]);
-void display_create(struct display **disp, int w, int h, const char *font);
+void display_create(struct display **disp, int w, int h, const char *font, int dot_stretch);
 void display_update(struct display *disp);
 

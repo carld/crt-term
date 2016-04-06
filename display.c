@@ -86,7 +86,16 @@ void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4]
   disp->bg[index] = bgpx;
 }
 
-static void display_load_bdf(struct display *disp, const char *filename) {
+static void dot_stretch_row(unsigned short *row, unsigned int width) {
+  int x = 0;
+  for (x = width-2; x >= 0; x--) {
+    if (row[x]==white_pixel && row[x+1] == black_pixel) {
+      row[x+1] = white_pixel;
+    }
+  }
+}
+
+static void display_load_bdf(struct display *disp, const char *filename, int dot_stretching) {
   FILE *fp = NULL;
   int lines = 0;
   int ngly = 0;
@@ -122,11 +131,20 @@ static void display_load_bdf(struct display *disp, const char *filename) {
         int index = x + w * y + w * h * z;
         disp->font_pixels[index] = pixel;
       }
+      if (dot_stretching) {
+        int w = disp->font->bbox.width;
+        int h = disp->font->bbox.height;
+        int x = 0;
+        int y = row;
+        int z = ngly;
+        int index = x + w * y + w * h * z;
+        dot_stretch_row(&disp->font_pixels[index], w);
+      }
     }
   }
 }
 
-void display_create(struct display ** dispp, int x, int y, const char *filename) {
+void display_create(struct display ** dispp, int x, int y, const char *filename, int dot_stretch) {
   struct display *disp = NULL;
   if (*dispp==NULL) {
     *dispp = (struct display *) malloc(sizeof (struct display));
@@ -135,7 +153,7 @@ void display_create(struct display ** dispp, int x, int y, const char *filename)
   disp = *dispp;
   assert(disp != NULL);
 
-  display_load_bdf(disp, filename);
+  display_load_bdf(disp, filename, dot_stretch);
 
   disp->width = x;
   disp->height = y;
