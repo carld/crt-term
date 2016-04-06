@@ -18,16 +18,21 @@ static GLchar * read_file(const GLchar *fname, GLint *len) {
 
   if (stat(fname, &buf) != 0) 
     goto error;
+
   fd = open(fname, O_RDWR);
   if (fd < 0) 
     goto error;
+
   src = calloc(buf.st_size + 1, sizeof (GLchar));
   assert(src);
+
   bytes = read(fd, src, buf.st_size);
   if (bytes < 0) 
     goto error;
+
   if (len) 
     *len = buf.st_size;
+
   close(fd);
   return src;
 
@@ -37,7 +42,6 @@ error:
 }
 
 GLuint load_shader(struct shader *shader) {
-  GLchar *info = NULL;
   GLint len = 0;
   GLint result;
 
@@ -51,27 +55,42 @@ GLuint load_shader(struct shader *shader) {
 
   glGetShaderiv(shader->id, GL_COMPILE_STATUS, &result);
   if (result == 0) {
-    printf("Compilation error!\n");
-  }
-  glGetShaderiv(shader->id, GL_INFO_LOG_LENGTH, &len);
-  if (len > 0) {
-    info = calloc(len, sizeof(GLubyte));
-    glGetShaderInfoLog(shader->id, len, NULL, info);
-    if (len > 0) printf("%s\n", info);
-    if (info) free((void *)info);
+    gl_shader_info_log(stdout, shader->id);
   }
   return shader->id;
 }
 
-void gl_info_log(GLuint prog) {
+void gl_shader_info_log(FILE *fp, GLuint shader) {
   GLchar *info = NULL;
-  GLint ilen = 0;
-  glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &ilen);
-  if (ilen > 0) {
-    info = calloc(ilen, sizeof(GLchar));
-    glGetProgramInfoLog(prog, ilen, NULL, info);
-    printf("%s\n", info);
-    if (info) free(info);
+  GLint len = 0;
+  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
+  if (len > 0) {
+    info = calloc(len, sizeof(GLubyte));
+    assert(info);
+    glGetShaderInfoLog(shader, len, NULL, info);
+    if (len > 0) 
+      fprintf(fp, "%s\n", info);
+
+    if (info) 
+      free(info);
+  }
+}
+
+void gl_program_info_log(FILE *fp, GLuint prog) {
+  GLchar *info = NULL;
+  GLint len = 0;
+  glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &len);
+  if (len > 0) {
+    info = calloc(len, sizeof(GLchar));
+    assert(info);
+
+    glGetProgramInfoLog(prog, len, NULL, info);
+
+    if (len > 0)
+      fprintf(fp, "%s\n", info);
+
+    if (info) 
+      free(info);
   }
 }
 
@@ -82,7 +101,6 @@ GLuint shader_program(struct shader *shaders, GLuint len) {
   prog = glCreateProgram();
 
   for (i = 0; i < len; i++) {
-    printf("Loading shader '%s'\n", shaders[i].filename);
     load_shader(&shaders[i]);
     glAttachShader(prog, shaders[i].id);
   }

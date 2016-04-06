@@ -12,19 +12,28 @@
 
 extern char **environ;
 
-void hup_handler(int s) {
-  printf("Signal: %s\n", strsignal(s));
+static void (*terminal_callback) (void) = NULL;
+
+void hup_handler(int sig) {
+  printf("%s\n", strsignal(sig));
   exit(1);
 }
 
-void io_handler(int s) {
-  printf("%s\n", strsignal(s));
+void io_handler(int sig) {
+  if (terminal_callback) {
+    terminal_callback();
+  }
+}
+
+void terminal_set_callback( void (*fn) (void) ) {
+  terminal_callback = fn;
 }
 
 /* called when data has been read from the fd slave -> master  (vte input )*/
 static void term_read_cb(struct shl_pty *pty, char *u8, size_t len, void *data) {
   struct terminal *term = (struct terminal *)data;
   assert(term != NULL);
+
   tsm_vte_input(term->vte, u8, len);
 }
 
@@ -38,7 +47,6 @@ static void term_write_cb(struct tsm_vte *vtelocal, const char *u8, size_t len, 
     printf ("could not write to pty, %d\n", r);
   }
 }
-
 
 static void log_tsm(void *data, const char *file, int line, const char *fn,
                     const char *subs, unsigned int sev, const char *format,
@@ -76,20 +84,27 @@ void terminal_create(struct terminal **termp, int w, int h) {
     perror("fork problem");
   } else if (term->pid != 0 ) {
     /* parent, pty master */
-#if 0
+
+    /* enable SIGIO signal for this process when it has a ready file descriptor */
     int fd = shl_pty_get_fd(term->pty);
     unsigned oflags = 0;
-    /* enable SIGIO signal for this process when it has a ready file descriptor */
     signal(SIGIO, &io_handler);
-    fcntl(fd, F_SETOWN, getpid(  ));
+    fcntl(fd, F_SETOWN, getpid());
     oflags = fcntl(fd, F_GETFL);
     fcntl(fd, F_SETFL, oflags | FASYNC);
-#endif
 
-    /* watch for SIGHUP */
-    signal(SIGCHLD, hup_handler);
+    /* enable SIGCHD signal when it's child process exits */
+    struct sigaction sa;
+    sa.sa_handler = hup_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    if (sigaction(SIGCHLD, &sa, NULL)==-1){
+      perror("could not install signal handler");
+      exit(-3);
+    }
+
   } else {
-    /* child, shell */
+    /* child, pty slave, shell */
     char *shell = getenv("SHELL") ? : "/bin/bash";
     char **argv = (char*[]) {  shell, NULL };
     execve(argv[0], argv, environ);

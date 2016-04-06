@@ -11,3 +11,5 @@ struct terminal {
 
 void terminal_create(struct terminal **term, int w, int h);
 
+void terminal_set_callback(void (*callback) (void));
+

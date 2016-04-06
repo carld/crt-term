@@ -241,7 +241,10 @@ int main(int argc, char *argv[], char *envp[])
   glfwSetWindowUserPointer(window, terminal);
   glfwSwapInterval(1);
   glfwSetKeyCallback(window, key_callback);
+
   x_display = glfwGetX11Display();
+
+  terminal_set_callback(glfwPostEmptyEvent);
 
   info();
 
@@ -261,19 +264,15 @@ int main(int argc, char *argv[], char *envp[])
   while (!glfwWindowShouldClose(window)) {
 
     shl_pty_dispatch(terminal->pty); 
-
     display->age = tsm_screen_draw(terminal->screen, draw_cb, display);
 
     display_update(display);
     update_texture(display);
 
-//    glActiveTexture(GL_TEXTURE0);
     render();
 
     glfwSwapBuffers(window);
-    glfwPollEvents();
-    usleep(40000);
-//    display_stats(display);
+    glfwWaitEvents();
   }
   glfwDestroyWindow(window);
   glfwTerminate();
