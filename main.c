@@ -116,6 +116,12 @@ void display_stats(struct display *disp) {
 
 static Display *x_display = NULL;
 
+void wakeup() {
+  XLockDisplay(x_display);
+  glfwPostEmptyEvent();
+  XUnlockDisplay(x_display);
+}
+
 static int draw_cb(struct tsm_screen *screen, uint32_t id,
                    const uint32_t *ch, size_t len,
                    unsigned int cwidth, unsigned int posx,
@@ -206,6 +212,8 @@ int main(int argc, char *argv[], char *envp[])
     }
   }
 
+  XInitThreads();
+
   /* displaySize is the size of the CRT monitor / character terminal texture */
   display_create(&display, displaySize[0], displaySize[1], fontfile, dot_stretch);
   terminal_create(&terminal, display->cols, display->rows);
@@ -251,7 +259,7 @@ int main(int argc, char *argv[], char *envp[])
 
   x_display = glfwGetX11Display();
 
-  terminal_set_callback(glfwPostEmptyEvent);
+  terminal_set_callback(wakeup);
 
   info();
 
@@ -279,7 +287,9 @@ int main(int argc, char *argv[], char *envp[])
     render();
 
     glfwSwapBuffers(window);
+    XLockDisplay(x_display);
     glfwWaitEvents();
+    XUnlockDisplay(x_display);
   }
   glfwDestroyWindow(window);
   glfwTerminate();
