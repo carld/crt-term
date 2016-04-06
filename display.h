@@ -21,9 +21,14 @@ struct display {
   /* the dimension of the display in characters (glyphs) */
   int rows, cols;
   unsigned char * text_buffer;
+  unsigned char * clean_buffer;
 
   /* libtsm screen draw age */
   int age;
+
+  /* statistics */
+  unsigned glyphs_rendered;
+  unsigned glyphs_clean_skipped;
 };
 
 void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4], unsigned char bg[4]);

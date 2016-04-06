@@ -48,6 +48,13 @@ void display_update(struct display *disp) {
       char ch = disp->text_buffer[text_ix];
       int src_index = font_pixels_encoding_index(disp, ch);
       int dst_index = display_pixels_index(disp, x * glinew, y * disp->font->bbox.height);
+
+      if (disp->clean_buffer[text_ix] != 0) {
+        disp->glyphs_clean_skipped++;
+        continue;
+      }
+      disp->glyphs_rendered++;
+
       for (r = 0; r < disp->font->bbox.height; r++) {
         int src_ch_ix = src_index + r * glinew;
         int dst_ch_ix = dst_index + r * dlinew;
@@ -68,9 +75,15 @@ void display_print(struct display *disp, const char *text, int x, int y) {
 
 void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4], unsigned char bg[4]) {
   int index = y * disp->cols + x;
+  unsigned short fgpx = make_pixel16(fg[0],fg[1],fg[2],fg[3]);
+  unsigned short bgpx = make_pixel16(bg[0],bg[1],bg[2],bg[3]);
+
+  disp->clean_buffer[index] = 
+    disp->text_buffer[index] == ch && disp->fg[index] == fgpx && disp->bg[index] == bgpx;
+
   disp->text_buffer[index] = ch;
-  disp->fg[index] = make_pixel16(fg[0],fg[1],fg[2],fg[3]);
-  disp->bg[index] = make_pixel16(bg[0],bg[1],bg[2],bg[3]);
+  disp->fg[index] = fgpx;
+  disp->bg[index] = bgpx;
 }
 
 static void display_load_bdf(struct display *disp, const char *filename) {
@@ -115,7 +128,9 @@ static void display_load_bdf(struct display *disp, const char *filename) {
 
 void display_create(struct display ** dispp, int x, int y, const char *filename) {
   struct display *disp = NULL;
-  if (*dispp==NULL) *dispp = (struct display *) malloc(sizeof (struct display));
+  if (*dispp==NULL) {
+    *dispp = (struct display *) malloc(sizeof (struct display));
+  }
 
   disp = *dispp;
   assert(disp != NULL);
@@ -131,12 +146,19 @@ void display_create(struct display ** dispp, int x, int y, const char *filename)
 
   disp->rows = (disp->height / disp->font->bbox.height)-1;
   disp->cols = (disp->width / disp->font->bbox.width)-1;
+
   disp->text_buffer = calloc(disp->rows * disp->cols, sizeof (unsigned char));
   assert(disp->text_buffer);
+  disp->clean_buffer = calloc(disp->rows * disp->cols, sizeof (unsigned char));
+  assert(disp->clean_buffer);
+
   disp->fg = calloc(disp->rows * disp->cols, sizeof (unsigned short));
   assert(disp->fg);
   disp->bg = calloc(disp->rows * disp->cols, sizeof (unsigned short));
   assert(disp->bg);
+
+  disp->glyphs_rendered = 0;
+  disp->glyphs_clean_skipped = 0;
 }
 
 

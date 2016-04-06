@@ -11,6 +11,7 @@
 #include <X11/XKBlib.h>
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -107,6 +108,10 @@ void info() {
   printf("Vendor      %s\n", glGetString(GL_VENDOR));
   printf("Renderer    %s\n", glGetString(GL_RENDERER));
   //printf("Extensions\n%s\n", glGetString(GL_EXTENSIONS));
+}
+
+void display_stats(struct display *disp) {
+  printf("glyphs rendered:  %d  (skipped %d)\n", disp->glyphs_rendered, disp->glyphs_clean_skipped);
 }
 
 static Display *x_display = NULL;
@@ -262,12 +267,13 @@ int main(int argc, char *argv[], char *envp[])
     display_update(display);
     update_texture(display);
 
-    glActiveTexture(GL_TEXTURE0);
+//    glActiveTexture(GL_TEXTURE0);
     render();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
     usleep(40000);
+//    display_stats(display);
   }
   glfwDestroyWindow(window);
   glfwTerminate();
