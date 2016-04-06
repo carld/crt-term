@@ -24,7 +24,7 @@ SHL = libshl/src/shl_pty.c
 
 SRC = $(SHL) $(TSM)
 SRC += main.c display.c font/bdf.c terminal.c 
-SRC += shader.c
+SRC += shader.c select_array.c
 OBJ = $(SRC:.c=.o)
 BIN = crt-term
 

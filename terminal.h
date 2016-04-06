@@ -13,3 +13,6 @@ void terminal_create(struct terminal **term, int w, int h);
 
 void terminal_set_callback(void (*callback) (void));
 
+int select_fd_array(struct timeval *timeout, int *fd_list, int len);
+
+

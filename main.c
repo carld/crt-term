@@ -116,12 +116,6 @@ void display_stats(struct display *disp) {
 
 static Display *x_display = NULL;
 
-void wakeup() {
-  XLockDisplay(x_display);
-  glfwPostEmptyEvent();
-  XUnlockDisplay(x_display);
-}
-
 static int draw_cb(struct tsm_screen *screen, uint32_t id,
                    const uint32_t *ch, size_t len,
                    unsigned int cwidth, unsigned int posx,
@@ -175,6 +169,23 @@ static void key_callback(GLFWwindow* window, int key /*glfw*/, int scancode, int
   tsm_vte_handle_keyboard(term->vte, key, XKB_KEY_NoSymbol, m, ucs4);
 }
 
+static void waitEvents(Display *xdisplay, struct terminal *term) {
+  int fdlist[2];
+  
+  fdlist[0] = ConnectionNumber(xdisplay);
+  fdlist[1] = shl_pty_get_fd(term->pty);
+  /* ignoring joystick fd */
+
+  assert(fdlist[0] > 0);
+  assert(fdlist[1] > 0);
+
+  while( select_fd_array(NULL, fdlist, 2) <= 0 )
+    ;
+
+  glfwPollEvents();
+  shl_pty_dispatch(term->pty);
+}
+
 int main(int argc, char *argv[], char *envp[])
 {
   GLFWwindow *window;
@@ -211,8 +222,6 @@ int main(int argc, char *argv[], char *envp[])
        exit(EXIT_FAILURE);
     }
   }
-
-  XInitThreads();
 
   /* displaySize is the size of the CRT monitor / character terminal texture */
   display_create(&display, displaySize[0], displaySize[1], fontfile, dot_stretch);
@@ -259,8 +268,6 @@ int main(int argc, char *argv[], char *envp[])
 
   x_display = glfwGetX11Display();
 
-  terminal_set_callback(wakeup);
-
   info();
 
   glewExperimental = GL_TRUE;
@@ -277,19 +284,14 @@ int main(int argc, char *argv[], char *envp[])
   glUniform2f(targetSize, screenSize[0], screenSize[1]);
 
   while (!glfwWindowShouldClose(window)) {
-
-    shl_pty_dispatch(terminal->pty); 
     display->age = tsm_screen_draw(terminal->screen, draw_cb, display);
-
     display_update(display);
     update_texture(display);
 
     render();
 
     glfwSwapBuffers(window);
-    XLockDisplay(x_display);
-    glfwWaitEvents();
-    XUnlockDisplay(x_display);
+    waitEvents(x_display, terminal);
   }
   glfwDestroyWindow(window);
   glfwTerminate();
