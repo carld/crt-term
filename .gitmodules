@@ -7,3 +7,6 @@
 [submodule "glfw"]
 	path = glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "libxkbcommon"]
+	path = libxkbcommon
+	url = https://github.com/xkbcommon/libxkbcommon.git

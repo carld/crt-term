@@ -7,7 +7,6 @@ addons:
     - libgl1-mesa-dev
     - libglu1-mesa-dev
     - libglew-dev
-    - libxkbcommon-dev
     - libx11-dev
     - libxxf86vm-dev
 script:

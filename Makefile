@@ -16,8 +16,10 @@ CC = gcc
 CFLAGS += -g -ggdb -Wall -D_GNU_SOURCE
 CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
 CFLAGS += -I./glfw/include
-LFLAGS += -lGLU -lGL -lGLEW -lm  -lxkbcommon -lX11 
+CFLAGS += -I./libxkbcommon
+LFLAGS += -lGLU -lGL -lGLEW -lm -lX11 
 LFLAGS += glfw/src/libglfw3.a -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor
+LFLAGS += libxkbcommon/.libs/libxkbcommon.a
 
 TSM = $(wildcard libtsm/src/*.c) $(wildcard libtsm/external/*.c)
 SHL = libshl/src/shl_pty.c
@@ -28,13 +30,19 @@ SRC += shader.c select_array.c
 OBJ = $(SRC:.c=.o)
 BIN = crt-term
 
-.PHONY: clean glfw
+.PHONY: clean glfw libxkbcommon
 
 .c.o:  $(SRC)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(BIN): glfw $(OBJ)
+$(BIN): libxkbcommon glfw $(OBJ)
 	$(CC) -o $@ $(OBJ)  $(LFLAGS)
+
+libxkbcommon:
+	cd libxkbcommon; \
+        ./autogen.sh; \
+        ./configure; \
+        make
 
 glfw:
 	cd glfw; \
@@ -47,6 +55,7 @@ glfw:
 
 clean:
 	cd glfw; make clean
+	cd libxkbcommon; make clean
 	rm -vf $(BIN) $(OBJ)
 
 
