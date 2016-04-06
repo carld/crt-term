@@ -10,6 +10,5 @@ addons:
     - libxkbcommon-dev
     - libx11-dev
     - libxxf86vm-dev
-    - libglfw3-dev
 script:
   - make
