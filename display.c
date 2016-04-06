@@ -78,8 +78,11 @@ void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4]
   unsigned short fgpx = make_pixel16(fg[0],fg[1],fg[2],fg[3]);
   unsigned short bgpx = make_pixel16(bg[0],bg[1],bg[2],bg[3]);
 
+  /* the position is clean if the character or attributes haven't changed */
   disp->clean_buffer[index] = 
-    disp->text_buffer[index] == ch && disp->fg[index] == fgpx && disp->bg[index] == bgpx;
+    disp->text_buffer[index] == ch &&
+    disp->fg[index] == fgpx &&
+    disp->bg[index] == bgpx;
 
   disp->text_buffer[index] = ch;
   disp->fg[index] = fgpx;
@@ -88,7 +91,7 @@ void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4]
 
 static void dot_stretch_row(unsigned short *row, unsigned int width) {
   int x = 0;
-  for (x = width-2; x >= 0; x--) {
+  for (x = width-1; x >= 0; x--) {
     if (row[x]==white_pixel && row[x+1] == black_pixel) {
       row[x+1] = white_pixel;
     }
@@ -163,7 +166,7 @@ void display_create(struct display ** dispp, int x, int y, const char *filename,
   assert(disp->pixels);
 
   disp->rows = (disp->height / disp->font->bbox.height)-1;
-  disp->cols = (disp->width / disp->font->bbox.width)-1;
+  disp->cols = (disp->width / disp->font->bbox.width);
 
   disp->text_buffer = calloc(disp->rows * disp->cols, sizeof (unsigned char));
   assert(disp->text_buffer);

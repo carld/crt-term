@@ -182,7 +182,7 @@ int main(int argc, char *argv[], char *envp[])
   const char *fontfile = "9x15.bdf";
   int opt;
   struct shader shaders[2];
-  int dot_stretch = 0;
+  int dot_stretch = 1;
 
   shaders[0].filename = "crt-lottes.glsl";
   shaders[0].type     = GL_FRAGMENT_SHADER;
@@ -198,7 +198,7 @@ int main(int argc, char *argv[], char *envp[])
       shaders[0].filename = optarg;
       break;    
     case 'd':
-      dot_stretch = 1;
+      dot_stretch ^= 1;
       break;      
     default: /* '?' */
        fprintf(stderr, "Usage: %s [-f bdf file] [-s glsl shader] [-d] \n", argv[0]);
