@@ -9,5 +9,6 @@ addons:
     - libglew-dev
     - libx11-dev
     - libxxf86vm-dev
+    - xutils-dev
 script:
   - make
