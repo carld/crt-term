@@ -49,7 +49,7 @@ void display_update(struct display *disp) {
       int src_index = font_pixels_encoding_index(disp, ch);
       int dst_index = display_pixels_index(disp, x * glinew, y * disp->font->bbox.height);
 
-      if (disp->clean_buffer[text_ix] != 0) {
+      if (disp->clean_buffer[text_ix] > 0) {
         disp->glyphs_clean_skipped++;
         continue;
       }
@@ -79,10 +79,15 @@ void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4]
   unsigned short bgpx = make_pixel16(bg[0],bg[1],bg[2],bg[3]);
 
   /* the position is clean if the character or attributes haven't changed */
-  disp->clean_buffer[index] = 
-    disp->text_buffer[index] == ch &&
-    disp->fg[index] == fgpx &&
-    disp->bg[index] == bgpx;
+  int clean = 
+    disp->text_buffer[index] == ch 
+    && disp->fg[index] == fgpx && disp->bg[index] == bgpx;
+
+  if (clean) {
+    disp->clean_buffer[index]++; /* age the cleanliness */
+  } else {
+    disp->clean_buffer[index] = 0;
+  }
 
   disp->text_buffer[index] = ch;
   disp->fg[index] = fgpx;

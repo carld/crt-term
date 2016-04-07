@@ -4,6 +4,7 @@ struct shader {
   GLenum type;
   const GLchar *src;
   GLuint id;
+  GLuint status;
 };
 
 GLuint shader_program(struct shader *shaders, const GLuint count);

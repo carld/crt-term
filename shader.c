@@ -43,7 +43,6 @@ error:
 
 GLuint load_shader(struct shader *shader) {
   GLint len = 0;
-  GLint result;
 
   shader->id = glCreateShader(shader->type);
   shader->src = read_file(shader->filename, &len);
@@ -53,8 +52,8 @@ GLuint load_shader(struct shader *shader) {
   // can free shader->src now
   printf("Compiled        %s\n",shader->filename);
 
-  glGetShaderiv(shader->id, GL_COMPILE_STATUS, &result);
-  if (result == 0) {
+  glGetShaderiv(shader->id, GL_COMPILE_STATUS, &shader->status);
+  if (shader->status == 0) {
     gl_shader_info_log(stdout, shader->id);
   }
   return shader->id;

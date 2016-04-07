@@ -84,15 +84,13 @@ void setup() {
   glColor4ub(255,255,255,255);
 }
 
-void update_texture(struct display *disp) {
+void update_texture(struct display *disp, GLenum filter) {
   glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
   glBindTexture(GL_TEXTURE_2D, disp->tex_id);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
     disp->width, disp->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, disp->pixels);
 }
@@ -200,13 +198,14 @@ int main(int argc, char *argv[], char *envp[])
   int opt;
   struct shader shaders[2];
   int dot_stretch = 1;
+  GLenum texture_filter = GL_NEAREST;
 
   shaders[0].filename = "crt-lottes.glsl";
   shaders[0].type     = GL_FRAGMENT_SHADER;
   shaders[1].filename = "vertex.glsl";
   shaders[1].type     = GL_VERTEX_SHADER;
 
-  while ((opt = getopt(argc, argv, "f:s:g:dh")) != -1) {
+  while ((opt = getopt(argc, argv, "f:s:g:ldh")) != -1) {
     switch (opt) {
     case 'f':
       fontfile = optarg;
@@ -221,9 +220,12 @@ int main(int argc, char *argv[], char *envp[])
       displaySize[0] = atoi(strtok(optarg,"x"));
       displaySize[1] = atoi(strtok(NULL,"x"));
       break;
+    case 'l':
+      texture_filter = GL_LINEAR;
+      break;
     case 'h':
     default: /* '?' */
-       printf("Usage: %s [-f bdf file] [-s glsl shader] [-g width x height] [-d] \n", argv[0]);
+       printf("Usage: %s [-f bdf file] [-s glsl shader] [-g width x height] [-d] [-l]\n", argv[0]);
        exit(EXIT_SUCCESS);
     }
   }
@@ -283,6 +285,9 @@ int main(int argc, char *argv[], char *envp[])
   setup();
   glGenTextures(1, & display->tex_id);
   program = create_program(shaders, 2);
+
+  if (shaders[0].status == 0) exit(-3);
+
   GLint sourceSize = glGetUniformLocation(program, "sourceSize");
   GLint targetSize = glGetUniformLocation(program, "targetSize");
   glUniform2f(sourceSize, display->width, display->height);
@@ -291,7 +296,7 @@ int main(int argc, char *argv[], char *envp[])
   while (!glfwWindowShouldClose(window)) {
     display->age = tsm_screen_draw(terminal->screen, draw_cb, display);
     display_update(display);
-    update_texture(display);
+    update_texture(display, texture_filter);
 
     render();
 
