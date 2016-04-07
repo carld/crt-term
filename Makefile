@@ -21,7 +21,7 @@ CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
 CFLAGS += -I./glfw/include
 CFLAGS += -I./libxkbcommon
 LFLAGS += -lGLU -lGL -lGLEW -lm -lX11 
-LFLAGS += $(GLFW) -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor
+LFLAGS += $(GLFW) -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor -lXi
 LFLAGS += $(XKB)
 
 TSM = $(wildcard libtsm/src/*.c) $(wildcard libtsm/external/*.c)
