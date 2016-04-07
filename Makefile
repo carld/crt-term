@@ -13,23 +13,23 @@ GIT = /usr/bin/git
 
 CC = gcc
 
-XKB = libxkbcommon/.libs/libxkbcommon.a
 GLFW = glfw/src/libglfw3.a
 
 CFLAGS += -g -ggdb -Wall -D_GNU_SOURCE
 CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
 CFLAGS += -I./glfw/include
 CFLAGS += -I./libxkbcommon
-LFLAGS += -lGLU -lGL -lGLEW -lm -lX11 
+LFLAGS += -lGLU -lGL -lGLEW
 LFLAGS += $(GLFW) -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor -lXi
-LFLAGS += $(XKB)
 
 TSM = $(wildcard libtsm/src/*.c) $(wildcard libtsm/external/*.c)
 SHL = libshl/src/shl_pty.c
 
 SRC = $(SHL) $(TSM)
+SRC += libxkbcommon/src/keysym-utf.c libxkbcommon/src/utf8.c
 SRC += main.c display.c font/bdf.c terminal.c 
 SRC += shader.c select_array.c
+
 OBJ = $(SRC:.c=.o)
 BIN = crt-term
 
@@ -38,14 +38,8 @@ BIN = crt-term
 .c.o:  $(SRC)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(BIN): $(XKB) $(GLFW) $(OBJ)
+$(BIN): $(GLFW) $(OBJ)
 	$(CC) -o $@ $(OBJ)  $(LFLAGS)
-
-$(XKB):
-	cd libxkbcommon; \
-        ./autogen.sh; \
-        ./configure --disable-x11; \
-        make
 
 $(GLFW):
 	cd glfw; \
@@ -57,7 +51,6 @@ $(GLFW):
 
 clean:
 	cd glfw; make clean
-	cd libxkbcommon; make clean
 	rm -vf $(BIN) $(OBJ)
 
 
