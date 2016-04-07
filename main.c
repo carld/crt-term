@@ -316,7 +316,6 @@ int main(int argc, char *argv[], char *envp[])
       waitEvents(x_display, terminal);
     } else  { 
       pollEvents(x_display, terminal);
-      usleep(50000);
     }
   }
   glfwDestroyWindow(window);
