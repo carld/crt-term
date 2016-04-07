@@ -196,13 +196,13 @@ int main(int argc, char *argv[], char *envp[])
   const GLFWvidmode *mode;
   struct terminal *terminal = NULL;
   struct display *display = NULL;
-  GLuint screenSize[2] = {1024,768};
-  GLuint displaySize[2] = {640,250};
+  GLuint screenSize[2] = {0,0};
+  GLuint displaySize[2] = {640,350};
   GLuint program;
   const char *fontfile = "9x15.bdf";
   int opt;
   struct shader shaders[2];
-  int dot_stretch = 1, wait_events = 1;
+  int dot_stretch = 1, wait_events = 1, full_screen = 1, show_pointer = 0;
   GLenum texture_filter = GL_NEAREST;
   
   shaders[0].filename = "crt-lottes.glsl";
@@ -210,7 +210,7 @@ int main(int argc, char *argv[], char *envp[])
   shaders[1].filename = "vertex.glsl";
   shaders[1].type     = GL_VERTEX_SHADER;
 
-  while ((opt = getopt(argc, argv, "f:s:g:ldph")) != -1) {
+  while ((opt = getopt(argc, argv, "f:s:g:w:ldph")) != -1) {
     switch (opt) {
     case 'f':
       fontfile = optarg;
@@ -225,6 +225,12 @@ int main(int argc, char *argv[], char *envp[])
       displaySize[0] = atoi(strtok(optarg,"x"));
       displaySize[1] = atoi(strtok(NULL,"x"));
       break;
+    case 'w':
+      screenSize[0] = atoi(strtok(optarg,"x"));
+      screenSize[1] = atoi(strtok(NULL,"x"));
+      full_screen ^= 1;
+      show_pointer ^= 1;
+      break;
     case 'l':
       texture_filter = GL_LINEAR;
       break;
@@ -233,7 +239,7 @@ int main(int argc, char *argv[], char *envp[])
       break;
     case 'h':
     default: /* '?' */
-       printf("Usage: %s [-f bdf file] [-s glsl shader] [-g width x height] [-d] [-l] [-p]\n", argv[0]);
+       printf("Usage: %s [-f bdf file] [-s glsl shader] [-g w x h] [-w w x h] [-d] [-l] [-p]\n", argv[0]);
        exit(EXIT_SUCCESS);
     }
   }
@@ -249,8 +255,10 @@ int main(int argc, char *argv[], char *envp[])
   mode    = glfwGetVideoMode(monitor); 
 
   /* screenSize is the size of the window being rendered to */
-  screenSize[0] = mode->width;
-  screenSize[1] = mode->height;
+  if (screenSize[0] == 0 || screenSize[1] == 0) {
+    screenSize[0] = mode->width;
+    screenSize[1] = mode->height;
+  }
 
   glfwWindowHint(GLFW_RED_BITS, mode->redBits);
   glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
@@ -264,7 +272,7 @@ int main(int argc, char *argv[], char *envp[])
 
   glfwWindowHint(GLFW_DECORATED, GL_FALSE);
 
-  window = glfwCreateWindow(screenSize[0], screenSize[1], argv[0], monitor, NULL);
+  window = glfwCreateWindow(screenSize[0], screenSize[1], argv[0], full_screen ? monitor : NULL, NULL);
   if (!window) {
     glfwTerminate();
     return -1;
@@ -279,7 +287,8 @@ int main(int argc, char *argv[], char *envp[])
   glfwSetWindowUserPointer(window, terminal);
   glfwSwapInterval(1);
   glfwSetKeyCallback(window, key_callback);
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+  if (show_pointer == 0)
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
   x_display = glfwGetX11Display();
 
