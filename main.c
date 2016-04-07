@@ -242,6 +242,7 @@ int main(int argc, char *argv[], char *envp[])
       break;
     case 'm':
       full_screen ^= 1;
+      show_pointer ^= 1;
       screenSize[0] = 0;
       screenSize[1] = 0;
       break;
