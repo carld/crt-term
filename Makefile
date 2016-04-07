@@ -40,6 +40,7 @@ BIN = crt-term
 
 $(BIN): $(GLFW) $(OBJ)
 	$(CC) -o $@ $(OBJ)  $(LFLAGS)
+	./$(BIN) -h
 
 $(GLFW):
 	cd glfw; \
