@@ -10,5 +10,6 @@ addons:
     - libx11-dev
     - libxxf86vm-dev
     - xutils-dev
+    - libxcb-xkb-dev
 script:
   - make
