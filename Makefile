@@ -49,8 +49,7 @@ $(XKB):
 
 $(GLFW):
 	cd glfw; \
-	cmake -DBUILD_SHARED_LIBS=ON \
-              -DBUILD_STATIC_LIBS=ON \
+	cmake -DBUILD_SHARED_LIBS=OFF \
               -DGLFW_BUILD_DOCS=OFF \
               -DGLFW_BUILD_EXAMPLES=OFF \
               -DGLFW_BUILD_TESTS=OFF .; \
