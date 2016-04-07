@@ -196,13 +196,16 @@ int main(int argc, char *argv[], char *envp[])
   const GLFWvidmode *mode;
   struct terminal *terminal = NULL;
   struct display *display = NULL;
-  GLuint screenSize[2] = {0,0};
-  GLuint displaySize[2] = {640,350};
+
+  /* default resolution for 9x15 font at 80 cols and 25 rows */
+  GLuint screenSize[2] = {80*9,25*15};
+  GLuint displaySize[2] = {80*9,25*15};
+
   GLuint program;
   const char *fontfile = "9x15.bdf";
   int opt;
   struct shader shaders[2];
-  int dot_stretch = 1, wait_events = 1, full_screen = 1, show_pointer = 0;
+  int dot_stretch = 1, wait_events = 1, full_screen = 0, show_pointer = 1;
   GLenum texture_filter = GL_NEAREST;
   
   shaders[0].filename = "crt-lottes.glsl";
@@ -210,7 +213,7 @@ int main(int argc, char *argv[], char *envp[])
   shaders[1].filename = "vertex.glsl";
   shaders[1].type     = GL_VERTEX_SHADER;
 
-  while ((opt = getopt(argc, argv, "f:s:g:w:ldph")) != -1) {
+  while ((opt = getopt(argc, argv, "f:s:g:w:ldphm")) != -1) {
     switch (opt) {
     case 'f':
       fontfile = optarg;
@@ -237,9 +240,14 @@ int main(int argc, char *argv[], char *envp[])
     case 'p':
       wait_events ^= 1; 
       break;
+    case 'm':
+      full_screen ^= 1;
+      screenSize[0] = 0;
+      screenSize[1] = 0;
+      break;
     case 'h':
     default: /* '?' */
-       printf("Usage: %s [-f bdf file] [-s glsl shader] [-g w x h] [-w w x h] [-d] [-l] [-p]\n", argv[0]);
+       printf("Usage: %s [-f bdf file] [-s glsl shader] [-g w x h] [-w w x h] [-d] [-l] [-p] [-m]\n", argv[0]);
        exit(EXIT_SUCCESS);
     }
   }
