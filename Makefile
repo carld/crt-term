@@ -13,13 +13,16 @@ GIT = /usr/bin/git
 
 CC = gcc
 
+XKB = libxkbcommon/.libs/libxkbcommon.a
+GLFW = glfw/src/libglfw3.a
+
 CFLAGS += -g -ggdb -Wall -D_GNU_SOURCE
 CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
 CFLAGS += -I./glfw/include
 CFLAGS += -I./libxkbcommon
 LFLAGS += -lGLU -lGL -lGLEW -lm -lX11 
-LFLAGS += glfw/src/libglfw3.a -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor
-LFLAGS += libxkbcommon/.libs/libxkbcommon.a
+LFLAGS += $(GLFW) -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor
+LFLAGS += $(XKB)
 
 TSM = $(wildcard libtsm/src/*.c) $(wildcard libtsm/external/*.c)
 SHL = libshl/src/shl_pty.c
@@ -30,21 +33,21 @@ SRC += shader.c select_array.c
 OBJ = $(SRC:.c=.o)
 BIN = crt-term
 
-.PHONY: clean glfw libxkbcommon
+.PHONY: clean
 
 .c.o:  $(SRC)
 	$(CC) -c $(CFLAGS) $< -o $@
 
-$(BIN): libxkbcommon glfw $(OBJ)
+$(BIN): $(XKB) $(GLFW) $(OBJ)
 	$(CC) -o $@ $(OBJ)  $(LFLAGS)
 
-libxkbcommon:
+$(XKB):
 	cd libxkbcommon; \
         ./autogen.sh; \
         ./configure; \
         make
 
-glfw:
+$(GLFW):
 	cd glfw; \
 	cmake -DBUILD_SHARED_LIBS=ON \
               -DBUILD_STATIC_LIBS=ON \
