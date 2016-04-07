@@ -32,6 +32,6 @@ void main(){
   vec4 dst = vec4(cl, 1.);
   vec4 src = texture(tex, Texcoord);
   src.a = ceil(src.rgb);
-  outColor = src + dst;
+  outColor = src + dst * (1 - src);
 }
 
