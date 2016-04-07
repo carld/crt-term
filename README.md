@@ -10,3 +10,6 @@
 ![Screenshot](/screen05.png?raw=true)
 
 [![Build Status](https://travis-ci.org/carld/crt-term.png?branch=master)](https://travis-ci.org/carld/crt-term)
+
+
+![Screenshot](/screen08.png?raw=true)
