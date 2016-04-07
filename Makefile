@@ -44,7 +44,7 @@ $(BIN): $(XKB) $(GLFW) $(OBJ)
 $(XKB):
 	cd libxkbcommon; \
         ./autogen.sh; \
-        ./configure; \
+        ./configure --disable-x11; \
         make
 
 $(GLFW):
