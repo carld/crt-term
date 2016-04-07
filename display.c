@@ -97,7 +97,7 @@ void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4]
 static void dot_stretch_row(unsigned short *row, unsigned int width) {
   int x = 0;
   for (x = width-1; x >= 0; x--) {
-    if (row[x]==white_pixel && row[x+1] == black_pixel) {
+    if (row[x] == white_pixel && row[x+1] == black_pixel) {
       row[x+1] = white_pixel;
     }
   }

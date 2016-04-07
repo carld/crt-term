@@ -19,8 +19,10 @@ CFLAGS += -g -ggdb -Wall -D_GNU_SOURCE
 CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
 CFLAGS += -I./glfw/include
 CFLAGS += -I./libxkbcommon
+CFLAGS += -pg
 LFLAGS += -lGLU -lGL -lGLEW
 LFLAGS += $(GLFW) -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor -lXi
+LFLAGS += -pg
 
 TSM = $(wildcard libtsm/src/*.c) $(wildcard libtsm/external/*.c)
 SHL = libshl/src/shl_pty.c

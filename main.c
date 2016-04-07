@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
+
 #define GLFW_EXPOSE_NATIVE_GLX
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
@@ -154,8 +155,6 @@ static void key_callback(GLFWwindow* window, int key /*glfw*/, int scancode, int
 
   if (action == GLFW_RELEASE) return;
 
-//  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-//    glfwSetWindowShouldClose(window, GL_TRUE);
   if (mods & GLFW_MOD_CONTROL)  m |= TSM_CONTROL_MASK;
   if (mods & GLFW_MOD_SHIFT) m |= TSM_SHIFT_MASK;
   if (mods & GLFW_MOD_ALT)   m |= TSM_ALT_MASK;
@@ -253,7 +252,7 @@ int main(int argc, char *argv[], char *envp[])
     }
   }
 
-  /* displaySize is the size of the CRT monitor / character terminal texture */
+  /* displaySize is the size of the character terminal texture */
   display_create(&display, displaySize[0], displaySize[1], fontfile, dot_stretch);
   terminal_create(&terminal, display->cols, display->rows);
 
