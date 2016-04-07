@@ -80,7 +80,7 @@ void setup() {
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
-  glClearColor(0.1,0.1,0.1,1.0);
+  glClearColor(0.3,0.3,0.3,1.0);
   glColor4ub(255,255,255,255);
 }
 
@@ -184,6 +184,11 @@ static void waitEvents(Display *xdisplay, struct terminal *term) {
   shl_pty_dispatch(term->pty);
 }
 
+static void pollEvents(Display *xdisplay, struct terminal *term) {
+  glfwPollEvents();
+  shl_pty_dispatch(term->pty);
+}
+
 int main(int argc, char *argv[], char *envp[])
 {
   GLFWwindow *window;
@@ -197,15 +202,15 @@ int main(int argc, char *argv[], char *envp[])
   const char *fontfile = "9x15.bdf";
   int opt;
   struct shader shaders[2];
-  int dot_stretch = 1;
+  int dot_stretch = 1, wait_events = 1;
   GLenum texture_filter = GL_NEAREST;
-
+  
   shaders[0].filename = "crt-lottes.glsl";
   shaders[0].type     = GL_FRAGMENT_SHADER;
   shaders[1].filename = "vertex.glsl";
   shaders[1].type     = GL_VERTEX_SHADER;
 
-  while ((opt = getopt(argc, argv, "f:s:g:ldh")) != -1) {
+  while ((opt = getopt(argc, argv, "f:s:g:ldph")) != -1) {
     switch (opt) {
     case 'f':
       fontfile = optarg;
@@ -223,9 +228,12 @@ int main(int argc, char *argv[], char *envp[])
     case 'l':
       texture_filter = GL_LINEAR;
       break;
+    case 'p':
+      wait_events ^= 1; 
+      break;
     case 'h':
     default: /* '?' */
-       printf("Usage: %s [-f bdf file] [-s glsl shader] [-g width x height] [-d] [-l]\n", argv[0]);
+       printf("Usage: %s [-f bdf file] [-s glsl shader] [-g width x height] [-d] [-l] [-p]\n", argv[0]);
        exit(EXIT_SUCCESS);
     }
   }
@@ -290,10 +298,13 @@ int main(int argc, char *argv[], char *envp[])
 
   GLint sourceSize = glGetUniformLocation(program, "sourceSize");
   GLint targetSize = glGetUniformLocation(program, "targetSize");
+  GLint appTime = glGetUniformLocation(program, "appTime");
   glUniform2f(sourceSize, display->width, display->height);
   glUniform2f(targetSize, screenSize[0], screenSize[1]);
 
   while (!glfwWindowShouldClose(window)) {
+    glUniform1f(appTime, glfwGetTime());
+
     display->age = tsm_screen_draw(terminal->screen, draw_cb, display);
     display_update(display);
     update_texture(display, texture_filter);
@@ -301,7 +312,12 @@ int main(int argc, char *argv[], char *envp[])
     render();
 
     glfwSwapBuffers(window);
-    waitEvents(x_display, terminal);
+    if (wait_events) {
+      waitEvents(x_display, terminal);
+    } else  { 
+      pollEvents(x_display, terminal);
+      usleep(50000);
+    }
   }
   glfwDestroyWindow(window);
   glfwTerminate();
