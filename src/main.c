@@ -16,7 +16,6 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "font/bdf.h"
 #include "libtsm.h"
 #include "shl_pty.h"
 #include "external/xkbcommon-keysyms.h"
@@ -24,8 +23,10 @@
 #include "terminal.h"
 #include "display.h"
 #include "shader.h"
-
+#include "files.h"
 #include "util_gl.h"
+
+#define SHADER_PATH_VAR  "SHADER_PATH"
 
 float vertices[] = {
     //  Position  Color             Texcoords
@@ -233,10 +234,12 @@ int main(int argc, char *argv[], char *envp[])
   struct shader shaders[2];
   int dot_stretch = 1, wait_events = 1, full_screen = 0, show_pointer = 1;
   GLenum texture_filter = GL_NEAREST;
+
+  char * shader_path[] = { getenv(SHADER_PATH_VAR), ".", "./shaders" };
   
-  shaders[0].filename = "crt-lottes.glsl";
+  shaders[0].filename = find_file("crt-lottes.glsl", shader_path, 3);
   shaders[0].type     = GL_FRAGMENT_SHADER;
-  shaders[1].filename = "vertex.glsl";
+  shaders[1].filename = find_file("vertex.glsl", shader_path, 3);
   shaders[1].type     = GL_VERTEX_SHADER;
 
   while ((opt = getopt(argc, argv, "f:s:g:w:ldphm")) != -1) {

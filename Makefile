@@ -29,8 +29,7 @@ SHL = libshl/src/shl_pty.c
 
 SRC = $(SHL) $(TSM)
 SRC += libxkbcommon/src/keysym-utf.c libxkbcommon/src/utf8.c
-SRC += main.c display.c font/bdf.c terminal.c 
-SRC += shader.c select_array.c
+SRC += $(wildcard src/*.c)
 
 OBJ = $(SRC:.c=.o)
 BIN = crt-term

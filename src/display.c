@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "font/bdf.h"
+#include "bdf.h"
 
 #include "display.h"
 
