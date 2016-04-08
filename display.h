@@ -6,17 +6,15 @@ struct display {
 
   /* the font bitmap */
   unsigned int font_width, font_height;
-  unsigned short *font_pixels;
+  unsigned char *font_pixels;
   int font_pixels_size;
   int glyph_width, glyph_height;
   int glyph_pixels_size;
-  unsigned short *temp_glyph_pixels;
+  unsigned char *temp_glyph_pixels;
 
   /* the display bitmap */
   unsigned int width, height;
-  unsigned short * pixels;
-  unsigned short * fg;
-  unsigned short * bg;
+  unsigned char * pixels;
   int pixels_size;
 
   /* texture identifier for opengl */
@@ -25,17 +23,15 @@ struct display {
   /* the dimension of the display in characters (glyphs) */
   int rows, cols;
   unsigned char * text_buffer;
-  unsigned char * clean_buffer;
 
   /* libtsm screen draw age */
   int age;
-
-  /* statistics */
-  unsigned glyphs_rendered;
-  unsigned glyphs_clean_skipped;
 };
 
 void display_create(struct display **disp, int w, int h, const char *font, int dot_stretch);
-unsigned short * display_encoding_pixels(struct display *disp, int encoding);
-unsigned short *display_update_temp_glyph(struct display *disp, int encoding, unsigned short fg, unsigned short bg);
-unsigned short make_pixel16(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
+unsigned char * display_encoding_pixels(struct display *disp, int encoding);
+unsigned char * display_fetch_glyph(struct display *disp, int encoding, unsigned char fg, unsigned char bg);
+
+/* GL_RGA_3_3_2 format */
+unsigned char make_pixel8(unsigned char r, unsigned char g, unsigned char b);
+

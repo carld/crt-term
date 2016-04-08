@@ -25,6 +25,8 @@
 #include "display.h"
 #include "shader.h"
 
+#include "util_gl.h"
+
 float vertices[] = {
     //  Position  Color             Texcoords
     -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Top-left
@@ -86,14 +88,14 @@ void setup() {
 }
 
 void update_texture(struct display *disp, GLenum filter) {
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glBindTexture(GL_TEXTURE_2D, disp->tex_id);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_BORDER);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-    disp->width, disp->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, disp->pixels);
+    disp->width, disp->height, 0, GL_RGB, GL_UNSIGNED_BYTE_3_3_2, disp->pixels);
 }
 
 void render() {
@@ -109,18 +111,12 @@ void info() {
   //printf("Extensions\n%s\n", glGetString(GL_EXTENSIONS));
 }
 
-void display_stats(struct display *disp) {
-  printf("glyphs rendered:  %d  (skipped %d)\n", disp->glyphs_rendered, disp->glyphs_clean_skipped);
-}
-
 static Display *x_display = NULL;
 
 static int display_cell_clean_check(struct display *disp, int x, int y, int ch, unsigned short fg, unsigned short bg)
 {
   int index = y * disp->cols + x;
   return disp->text_buffer[index] == ch ;
-        //&& disp->fg[index] == fg 
-        //&& disp->bg[index] == bg;
 }
 
 static int draw_cb(struct tsm_screen *screen, uint32_t id,
@@ -138,40 +134,40 @@ static int draw_cb(struct tsm_screen *screen, uint32_t id,
   if (skip) return 0;
 
   if (attr->inverse) {
-    fg = make_pixel16(attr->br, attr->bg, attr->bb, 0xff);
-    bg = make_pixel16(attr->fr, attr->fg, attr->fb, 0xff);
+    fg = make_pixel_3_3_2(attr->br, attr->bg, attr->bb);
+    bg = make_pixel_3_3_2(attr->fr, attr->fg, attr->fb);
   } else {
-    fg = make_pixel16(attr->fr, attr->fg, attr->fb, 0xff);
-    bg = make_pixel16(attr->br, attr->bg, attr->bb, 0xff);
+    fg = make_pixel_3_3_2(attr->fr, attr->fg, attr->fb);
+    bg = make_pixel_3_3_2(attr->br, attr->bg, attr->bb);
   }
 
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glBindTexture(GL_TEXTURE_2D, disp->tex_id);
   if (!len) {
-    unsigned short *pixels;
+    unsigned char *pixels;
     if (display_cell_clean_check(disp, posx, posy, ' ', fg, bg)) {
       return 0;
     }
-    pixels = display_update_temp_glyph(disp, ' ', fg, bg);
+    pixels = display_fetch_glyph(disp, ' ', fg, bg);
     assert(pixels);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 
       posx * disp->glyph_width, posy * disp->glyph_height,
       disp->glyph_width, disp->glyph_height,
-      GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4,
+      GL_RGB, GL_UNSIGNED_BYTE_3_3_2,
       pixels);
   } else {
-    unsigned short *pixels;
+    unsigned char *pixels;
     int i;
     for(i = 0; i < len; i++) {
       if (display_cell_clean_check(disp, posx+i, posy, ch[i], fg, bg)) {
         return 0;
       }
-      //pixels = display_encoding_pixels(disp, ch[i]);
-      pixels = display_update_temp_glyph(disp, ch[i], fg, bg);
+      pixels = display_fetch_glyph(disp, ch[i], fg, bg);
       assert(pixels);
       glTexSubImage2D(GL_TEXTURE_2D, 0, 
         (posx+i) * disp->glyph_width, posy * disp->glyph_height,
         disp->glyph_width, disp->glyph_height,
-        GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4,
+        GL_RGB, GL_UNSIGNED_BYTE_3_3_2,
         pixels);
     }
   }
