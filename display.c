@@ -9,23 +9,19 @@
 
 #include "display.h"
 
+
+
 /* return index of top left pixel for given character in font pixels */
-static int font_pixels_encoding_index(struct display *disp, int encoding) {
-  int w = disp->font->bbox.width;
-  int h = disp->font->bbox.height;
-  int x = 0;
-  int y = 0;
-  int z = encoding;
-  return x + w * y + w * h * z;
+#define font_pixels_encoding_index(d, e) (d->glyph_width * d->glyph_height * e)
+
+/* return pointer to pixels for given encoding aka glyph or character */
+unsigned short * display_encoding_pixels(struct display *disp, int encoding) 
+{
+  return & disp->font_pixels[font_pixels_encoding_index(disp, encoding)];
 }
 
-/* return index of pixel at location x y */
-static int display_pixels_index(struct display *disp, int x, int y) {
-  int w = disp->width;
-  return x + w * y;
-}
-
-static unsigned short make_pixel16(unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
+/* make an unsigned short rgba pixel with 4 bits per channel */
+unsigned short make_pixel16(unsigned char r, unsigned char g, unsigned char b, unsigned char a) {
   unsigned short p = 0;
   p |= (r >> 4) << 12;
   p |= (g >> 4) << 8; 
@@ -37,61 +33,23 @@ static unsigned short make_pixel16(unsigned char r, unsigned char g, unsigned ch
 static const unsigned short white_pixel = 0xffff;
 static const unsigned short black_pixel = 0x000f;
 
-/* turn encoded text buffer into rendered glyph pixels */
-void display_update(struct display *disp) {
-  int glinew = disp->font->bbox.width;
-  int dlinew = disp->width;
-  int x, y, r, c;
-  for(y = 0; y < disp->rows; y++) {
-    for(x = 0; x < disp->cols; x++) {
-      int text_ix = y * disp->cols + x;
-      char ch = disp->text_buffer[text_ix];
-      int src_index = font_pixels_encoding_index(disp, ch);
-      int dst_index = display_pixels_index(disp, x * glinew, y * disp->font->bbox.height);
+/* copy the given encoding into the temp glyph pixel space with given foreground and background colours */
+unsigned short *display_update_temp_glyph(struct display *disp, int encoding, unsigned short fg, unsigned short bg)
+{
+  unsigned short *dst = disp->temp_glyph_pixels;
+  unsigned short *src = disp->font_pixels;
+  int x, y;
+  int index_dst = 0;
+  int index_src = 0;
+  for(y = 0; y < disp->glyph_height; y++) {
+    for(x = 0; x < disp->glyph_width; x++) {
+      index_dst = y * disp->glyph_width + x;
+      index_src = font_pixels_encoding_index(disp, encoding) + index_dst;
 
-      if (disp->clean_buffer[text_ix] > 0) {
-        disp->glyphs_clean_skipped++;
-        continue;
-      }
-      disp->glyphs_rendered++;
-
-      for (r = 0; r < disp->font->bbox.height; r++) {
-        int src_ch_ix = src_index + r * glinew;
-        int dst_ch_ix = dst_index + r * dlinew;
-        for (c = 0; c < disp->font->bbox.width; c++) {
-          disp->pixels[dst_ch_ix + c] = 
-            disp->font_pixels[src_ch_ix + c] == black_pixel ? 
-              disp->bg[text_ix] : disp->fg[text_ix];
-        }
-      }
+      dst[index_dst] = src[index_src] == black_pixel ? bg : fg;
     }
   }
-}
-
-void display_print(struct display *disp, const char *text, int x, int y) {
-  int index = y * disp->cols + x;
-  memcpy(&disp->text_buffer[index], text, strlen(text));
-}
-
-void display_put(struct display *disp, int ch, int x, int y, unsigned char fg[4], unsigned char bg[4]) {
-  int index = y * disp->cols + x;
-  unsigned short fgpx = make_pixel16(fg[0],fg[1],fg[2],fg[3]);
-  unsigned short bgpx = make_pixel16(bg[0],bg[1],bg[2],bg[3]);
-
-  /* the position is clean if the character or attributes haven't changed */
-  int clean = 
-    disp->text_buffer[index] == ch 
-    && disp->fg[index] == fgpx && disp->bg[index] == bgpx;
-
-  if (clean) {
-    disp->clean_buffer[index]++; /* age the cleanliness */
-  } else {
-    disp->clean_buffer[index] = 0;
-  }
-
-  disp->text_buffer[index] = ch;
-  disp->fg[index] = fgpx;
-  disp->bg[index] = bgpx;
+  return dst;
 }
 
 static void dot_stretch_row(unsigned short *row, unsigned int width) {
@@ -118,7 +76,11 @@ static void display_load_bdf(struct display *disp, const char *filename, int dot
   disp->font_width = disp->font->bbox.width * total_chars;
   disp->font_height = disp->font->bbox.height;
   disp->font_pixels_size = disp->font->bbox.width * disp->font->bbox.height * total_chars;
+
   disp->font_pixels = calloc(disp->font_pixels_size, sizeof (unsigned short));
+  assert(disp->font_pixels);
+  disp->temp_glyph_pixels = calloc(disp->font->bbox.width * disp->font->bbox.height, sizeof (unsigned short));
+  assert(disp->temp_glyph_pixels);
 
   for(ngly = 0; ngly < total_chars; ngly++) {
     struct bdf_glyph *glyph = bdf_find_glyph(disp->font, ngly, 0);
@@ -170,6 +132,10 @@ void display_create(struct display ** dispp, int x, int y, const char *filename,
   disp->pixels = calloc(disp->pixels_size, sizeof (unsigned short));
   assert(disp->pixels);
 
+  disp->glyph_width = disp->font->bbox.width;
+  disp->glyph_height = disp->font->bbox.height;
+  disp->glyph_pixels_size = disp->glyph_width * disp->glyph_height;
+
   disp->rows = (disp->height / disp->font->bbox.height)-1;
   disp->cols = (disp->width / disp->font->bbox.width);
 
@@ -186,5 +152,4 @@ void display_create(struct display ** dispp, int x, int y, const char *filename,
   disp->glyphs_rendered = 0;
   disp->glyphs_clean_skipped = 0;
 }
-
 

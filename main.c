@@ -115,6 +115,14 @@ void display_stats(struct display *disp) {
 
 static Display *x_display = NULL;
 
+static int display_cell_clean_check(struct display *disp, int x, int y, int ch, unsigned short fg, unsigned short bg)
+{
+  int index = y * disp->cols + x;
+  return disp->text_buffer[index] == ch ;
+        //&& disp->fg[index] == fg 
+        //&& disp->bg[index] == bg;
+}
+
 static int draw_cb(struct tsm_screen *screen, uint32_t id,
                    const uint32_t *ch, size_t len,
                    unsigned int cwidth, unsigned int posx,
@@ -122,7 +130,7 @@ static int draw_cb(struct tsm_screen *screen, uint32_t id,
                    const struct tsm_screen_attr *attr,
                    tsm_age_t age, void *data)
 {
-  uint8_t fg[4], bg[4];
+  unsigned short fg, bg;
   struct display *disp = (struct display *)data;
   int skip;
 
@@ -130,19 +138,42 @@ static int draw_cb(struct tsm_screen *screen, uint32_t id,
   if (skip) return 0;
 
   if (attr->inverse) {
-    fg[0] = attr->br; fg[1] = attr->bg; fg[2] = attr->bb; fg[3] = 255;
-    bg[0] = attr->fr; bg[1] = attr->fg; bg[2] = attr->fb; bg[3] = 255;
+    fg = make_pixel16(attr->br, attr->bg, attr->bb, 0xff);
+    bg = make_pixel16(attr->fr, attr->fg, attr->fb, 0xff);
   } else {
-    fg[0] = attr->fr; fg[1] = attr->fg; fg[2] = attr->fb; fg[3] = 255;
-    bg[0] = attr->br; bg[1] = attr->bg; bg[2] = attr->bb; bg[3] = 255;
+    fg = make_pixel16(attr->fr, attr->fg, attr->fb, 0xff);
+    bg = make_pixel16(attr->br, attr->bg, attr->bb, 0xff);
   }
 
+  glBindTexture(GL_TEXTURE_2D, disp->tex_id);
   if (!len) {
-    display_put(disp, ' ', posx, posy, fg, bg);
+    unsigned short *pixels;
+    if (display_cell_clean_check(disp, posx, posy, ' ', fg, bg)) {
+      return 0;
+    }
+    pixels = display_update_temp_glyph(disp, ' ', fg, bg);
+    assert(pixels);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 
+      posx * disp->glyph_width, posy * disp->glyph_height,
+      disp->glyph_width, disp->glyph_height,
+      GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4,
+      pixels);
   } else {
+    unsigned short *pixels;
     int i;
-    for(i = 0; i < len; i++)
-      display_put(disp, ch[i], posx, posy, fg, bg);
+    for(i = 0; i < len; i++) {
+      if (display_cell_clean_check(disp, posx+i, posy, ch[i], fg, bg)) {
+        return 0;
+      }
+      //pixels = display_encoding_pixels(disp, ch[i]);
+      pixels = display_update_temp_glyph(disp, ch[i], fg, bg);
+      assert(pixels);
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 
+        (posx+i) * disp->glyph_width, posy * disp->glyph_height,
+        disp->glyph_width, disp->glyph_height,
+        GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4,
+        pixels);
+    }
   }
   return 0;
 }
@@ -230,8 +261,6 @@ int main(int argc, char *argv[], char *envp[])
     case 'w':
       screenSize[0] = atoi(strtok(optarg,"x"));
       screenSize[1] = atoi(strtok(NULL,"x"));
-      full_screen ^= 1;
-      show_pointer ^= 1;
       break;
     case 'l':
       texture_filter = GL_LINEAR;
@@ -319,12 +348,11 @@ int main(int argc, char *argv[], char *envp[])
   glUniform2f(sourceSize, display->width, display->height);
   glUniform2f(targetSize, screenSize[0], screenSize[1]);
 
+  update_texture(display, texture_filter);
   while (!glfwWindowShouldClose(window)) {
     glUniform1f(appTime, glfwGetTime());
 
     display->age = tsm_screen_draw(terminal->screen, draw_cb, display);
-    display_update(display);
-    update_texture(display, texture_filter);
 
     render();
 
