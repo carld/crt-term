@@ -12,6 +12,10 @@ struct display {
   int glyph_pixels_size;
   unsigned char *temp_glyph_pixels;
 
+  /* keep track of how often a glyph bitmap has to been generated */
+  unsigned int hits;
+  unsigned int misses;
+
   /* the display bitmap */
   unsigned int width, height;
   unsigned char * pixels;

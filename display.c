@@ -26,8 +26,10 @@ unsigned char *display_fetch_glyph(struct display *disp, int encoding, unsigned 
 {
   /* no need return colorised bitmap, can just return the glyph pointer */
   if (fg == white_pixel && bg == black_pixel) {
+    disp->hits++;
     return display_encoding_pixels(disp, encoding);    
   }
+  disp->misses++;
   unsigned char *dst = disp->temp_glyph_pixels;
   unsigned char *src = disp->font_pixels;
   int x, y;
@@ -134,5 +136,8 @@ void display_create(struct display ** dispp, int x, int y, const char *filename,
 
   disp->text_buffer = calloc(disp->rows * disp->cols, sizeof (unsigned char));
   assert(disp->text_buffer);
+
+  disp->hits = 0;
+  disp->misses = 0;
 }
 

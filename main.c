@@ -344,6 +344,8 @@ int main(int argc, char *argv[], char *envp[])
   glUniform2f(sourceSize, display->width, display->height);
   glUniform2f(targetSize, screenSize[0], screenSize[1]);
 
+  float lastTime = glfwGetTime();
+
   update_texture(display, texture_filter);
   while (!glfwWindowShouldClose(window)) {
     glUniform1f(appTime, glfwGetTime());
@@ -357,6 +359,11 @@ int main(int argc, char *argv[], char *envp[])
       waitEvents(x_display, terminal);
     } else  { 
       pollEvents(x_display, terminal);
+    }
+
+    if (glfwGetTime() > lastTime + 1.0) {
+      /* do something once per second */
+      lastTime = glfwGetTime();
     }
   }
   glfwDestroyWindow(window);
