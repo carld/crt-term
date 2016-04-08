@@ -1,4 +1,4 @@
-![Screenshot](/screen06.png?raw=true)
+![Screenshot](/docs/screen06.png?raw=true)
 
 ## Installation
 
@@ -7,9 +7,9 @@
     git submodule update
     make
 
-![Screenshot](/screen05.png?raw=true)
+![Screenshot](/docs/screen05.png?raw=true)
 
 [![Build Status](https://travis-ci.org/carld/crt-term.png?branch=master)](https://travis-ci.org/carld/crt-term)
 
 
-![Screenshot](/screen08.png?raw=true)
+![Screenshot](/docs/screen08.png?raw=true)
