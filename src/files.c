@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 /* look for filename in paths */
-char * find_file(const char *filename, const char *paths[], int pathc)
+const char * find_file(const char *filename, const char *paths[], int pathc)
 {
   char *found_path = NULL;
   int i;
