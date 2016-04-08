@@ -49,7 +49,8 @@ static void log_tsm(void *data, const char *file, int line, const char *fn,
 void terminal_create(struct terminal **termp, int w, int h) {
   struct terminal *term = NULL;
 
-  if (*termp == NULL) *termp = calloc(1, sizeof (struct terminal));
+  if (*termp == NULL) 
+    *termp = calloc(1, sizeof (struct terminal));
 
   term = *termp;
 
@@ -69,7 +70,7 @@ void terminal_create(struct terminal **termp, int w, int h) {
                    tsm_screen_get_height(term->screen));
 
   if (term->pid < 0) {
-    perror("fork problem");
+    perror("shl_pty_open");
   } else if (term->pid != 0 ) {
     /* parent, pty master */
 
@@ -86,6 +87,6 @@ void terminal_create(struct terminal **termp, int w, int h) {
     exit(-2);
   }
   tsm_screen_resize(term->screen, w, h);
-  shl_pty_resize(term->pty, tsm_screen_get_width(term->screen), tsm_screen_get_height(term->screen));
+  shl_pty_resize(term->pty, w, h);
 }
 

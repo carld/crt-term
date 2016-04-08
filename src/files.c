@@ -4,6 +4,7 @@
 #include <libgen.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 /* look for filename in paths */
 const char * find_file(const char *filename, const char *paths[], int pathc)
@@ -37,7 +38,7 @@ const char * find_file(const char *filename, const char *paths[], int pathc)
       free(namelist);
     }
   }
-
+  assert(found_path != NULL);
   return found_path;
 }
 

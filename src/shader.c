@@ -9,6 +9,7 @@
 #include <GL/glew.h>
 
 #include "shader.h"
+#include "util_gl.h"
 
 static GLchar * read_file(const GLchar *fname, GLint *len) {
   struct stat buf;
@@ -45,6 +46,9 @@ GLuint load_shader(struct shader *shader) {
   GLint len = 0;
 
   shader->id = glCreateShader(shader->type);
+
+  assert(shader->id != 0);
+
   shader->src = read_file(shader->filename, &len);
   len = -1;
   glShaderSource(shader->id, 1, &shader->src, &len);
@@ -59,40 +63,6 @@ GLuint load_shader(struct shader *shader) {
   return shader->id;
 }
 
-void gl_shader_info_log(FILE *fp, GLuint shader) {
-  GLchar *info = NULL;
-  GLint len = 0;
-  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &len);
-  if (len > 0) {
-    info = calloc(len, sizeof(GLubyte));
-    assert(info);
-    glGetShaderInfoLog(shader, len, NULL, info);
-    if (len > 0) 
-      fprintf(fp, "%s\n", info);
-
-    if (info) 
-      free(info);
-  }
-}
-
-void gl_program_info_log(FILE *fp, GLuint prog) {
-  GLchar *info = NULL;
-  GLint len = 0;
-  glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &len);
-  if (len > 0) {
-    info = calloc(len, sizeof(GLchar));
-    assert(info);
-
-    glGetProgramInfoLog(prog, len, NULL, info);
-
-    if (len > 0)
-      fprintf(fp, "%s\n", info);
-
-    if (info) 
-      free(info);
-  }
-}
-
 GLuint shader_program(struct shader *shaders, GLuint len) {
   GLuint prog;
   int i;
@@ -105,3 +75,4 @@ GLuint shader_program(struct shader *shaders, GLuint len) {
   }
   return prog;
 }
+

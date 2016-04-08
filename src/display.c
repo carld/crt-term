@@ -29,6 +29,8 @@ unsigned char *display_fetch_glyph(struct display *disp, int encoding, unsigned 
     disp->hits++;
     return display_encoding_pixels(disp, encoding);    
   }
+
+  /* create bitmap for the glyph using the foreground and background colours */
   disp->misses++;
   unsigned char *dst = disp->temp_glyph_pixels;
   unsigned char *src = disp->font_pixels;
@@ -45,6 +47,7 @@ unsigned char *display_fetch_glyph(struct display *disp, int encoding, unsigned 
   return dst;
 }
 
+/* single pixels gain a neighbouring pixel on the right side:  010 -> 011 */
 static void dot_stretch_row(unsigned char *row, unsigned int width) {
   int x = 0;
   for (x = width-1; x >= 0; x--) {
@@ -54,17 +57,23 @@ static void dot_stretch_row(unsigned char *row, unsigned int width) {
   }
 }
 
+/* create bitmaps for each glyph from the BDF file */
 static void display_load_bdf(struct display *disp, const char *filename, int dot_stretching) {
   FILE *fp = NULL;
   int lines = 0;
   int ngly = 0;
   int total_chars = 255;
 
+  printf("Loading %s\n", filename);
+
   fp = fopen(filename, "r");
   assert(fp != NULL);
+
   bdf_read(fp, &disp->font, &lines);
   bdf_sort_glyphs(disp->font);
+
   fclose(fp);
+  printf("Loaded BDF font\n");
 
   disp->font_width = disp->font->bbox.width * total_chars;
   disp->font_height = disp->font->bbox.height;
@@ -72,20 +81,29 @@ static void display_load_bdf(struct display *disp, const char *filename, int dot
 
   disp->font_pixels = calloc(disp->font_pixels_size, sizeof (unsigned char));
   assert(disp->font_pixels);
+
   disp->temp_glyph_pixels = calloc(disp->font->bbox.width * disp->font->bbox.height, sizeof (unsigned char));
   assert(disp->temp_glyph_pixels);
 
   for(ngly = 0; ngly < total_chars; ngly++) {
     struct bdf_glyph *glyph = bdf_find_glyph(disp->font, ngly, 0);
     int row, col;
-    if (glyph == NULL) continue;
+
+    if (glyph == NULL) 
+      continue;
+
     int ncolbytes = (glyph->bbox.width + 7) / 8;
     for (row = 0; row < glyph->bbox.height; row++) {
       for (col = 0; col < glyph->bbox.width; col++) {
+
+        /* in the BDF bitmap, each pixel is only one bit, so there's 8 pixels in a byte */
+
         int colbyte = col / 8;
         int colbits  = col % 8;
+
         unsigned char bmp = glyph->bitmap[row * ncolbytes + colbyte];
         unsigned char pixel = ((bmp>>(7-colbits)) & 1) == 1 ? white_pixel : black_pixel;
+
         int w = disp->font->bbox.width;
         int h = disp->font->bbox.height;
         int x = col;
@@ -109,33 +127,20 @@ static void display_load_bdf(struct display *disp, const char *filename, int dot
   }
 }
 
+/* create a new display */
 void display_create(struct display ** dispp, int x, int y, const char *filename, int dot_stretch) {
   struct display *disp = NULL;
-  if (*dispp==NULL) {
+  if (*dispp == NULL) {
     *dispp = (struct display *) malloc(sizeof (struct display));
   }
-
   disp = *dispp;
   assert(disp != NULL);
 
   display_load_bdf(disp, filename, dot_stretch);
 
-  disp->width = x;
-  disp->height = y;
-  disp->pixels_size = disp->width * disp->height;
-
-  disp->pixels = calloc(disp->pixels_size, sizeof (unsigned char));
-  assert(disp->pixels);
-
   disp->glyph_width = disp->font->bbox.width;
   disp->glyph_height = disp->font->bbox.height;
   disp->glyph_pixels_size = disp->glyph_width * disp->glyph_height;
-
-  disp->rows = (disp->height / disp->font->bbox.height)-1;
-  disp->cols = (disp->width / disp->font->bbox.width);
-
-  disp->text_buffer = calloc(disp->rows * disp->cols, sizeof (unsigned char));
-  assert(disp->text_buffer);
 
   disp->hits = 0;
   disp->misses = 0;

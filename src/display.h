@@ -8,6 +8,7 @@ struct display {
   unsigned int font_width, font_height;
   unsigned char *font_pixels;
   int font_pixels_size;
+
   int glyph_width, glyph_height;
   int glyph_pixels_size;
   unsigned char *temp_glyph_pixels;
@@ -16,26 +17,16 @@ struct display {
   unsigned int hits;
   unsigned int misses;
 
-  /* the display bitmap */
-  unsigned int width, height;
-  unsigned char * pixels;
-  int pixels_size;
-
-  /* texture identifier for opengl */
-  unsigned int tex_id;
-
-  /* the dimension of the display in characters (glyphs) */
+  /* the dimension of the display in characters */
   int rows, cols;
-  unsigned char * text_buffer;
 
   /* libtsm screen draw age */
   int age;
 };
 
+/* create a new display in the given pixel dimensions, and the provided bdf font file */
 void display_create(struct display **disp, int w, int h, const char *font, int dot_stretch);
-unsigned char * display_encoding_pixels(struct display *disp, int encoding);
-unsigned char * display_fetch_glyph(struct display *disp, int encoding, unsigned char fg, unsigned char bg);
 
-/* GL_RGA_3_3_2 format */
-unsigned char make_pixel8(unsigned char r, unsigned char g, unsigned char b);
+/* retrieve the bitmap for a given character glyph encoding, coloring with foreground and background */
+unsigned char * display_fetch_glyph(struct display *disp, int encoding, unsigned char fg, unsigned char bg);
 
