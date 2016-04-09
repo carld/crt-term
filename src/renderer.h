@@ -1,7 +1,7 @@
 
 struct renderer;
 
-struct renderer * renderer_create(struct options o, struct renderer ** s);
+struct renderer * renderer_create(struct options o);
 void renderer_destroy(struct renderer *s);
 
 void render(float time, struct renderer * s);

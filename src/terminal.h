@@ -1,7 +1,7 @@
 
 struct terminal;
 
-struct terminal * terminal_create(struct terminal **term);
+struct terminal * terminal_create();
 
 void terminal_resize(struct terminal *term, int w, int h);
 

@@ -35,8 +35,6 @@ struct renderer {
   struct console_font *font;
 };
 
-static struct renderer vtterm;
-
 static float vertices[] = {
     //  Position  Color             Texcoords
     -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Top-left
@@ -50,11 +48,10 @@ static GLuint elements[] = {
     2, 3, 0
 };
 
-struct renderer * renderer_create(struct options opts, struct renderer **scnp) {
-  struct renderer *renderer;
- 
-  if (*scnp == NULL)
-    renderer = *scnp = &vtterm;
+struct renderer * renderer_create(struct options opts) {
+  struct renderer *renderer = calloc(1, sizeof(struct renderer));
+
+  assert(renderer); 
 
   if (opts.linear_filter) 
     renderer->texture_filter = GL_LINEAR;

@@ -63,13 +63,10 @@ static void log_tsm(void *data, const char *file, int line, const char *fn,
 }
 
 
-struct terminal * terminal_create(struct terminal **termp) {
+struct terminal * terminal_create() {
   struct terminal *term = NULL;
 
-  if (*termp == NULL) 
-    *termp = calloc(1, sizeof (struct terminal));
-
-  term = *termp;
+  term = calloc(1, sizeof (struct terminal));
 
   assert(term != NULL);
 

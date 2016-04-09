@@ -171,7 +171,7 @@ int main(int argc, char *argv[], char *envp[])
   if (!glfwInit())
     return -1;
 
-  terminal_create(&con.terminal);
+  con.terminal = terminal_create(NULL);
 
   monitor = glfwGetPrimaryMonitor();
   mode    = glfwGetVideoMode(monitor); 
@@ -204,7 +204,7 @@ int main(int argc, char *argv[], char *envp[])
   if (err != GLEW_OK) exit(1);
   if (!GLEW_VERSION_3_2) exit(1);
 
-  renderer_create(opts, &con.renderer);
+  con.renderer = renderer_create(opts);
 
   int glyph_wh[2];
   renderer_get_glyph_wh(con.renderer, glyph_wh) ;
