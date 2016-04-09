@@ -21,6 +21,8 @@ struct options
   unsigned int dot_stretch : 1;
 
   unsigned int linear_filter : 1; /* otherwise nearest */
+
+  char *name;
 };
 
 struct options options_defaults();
