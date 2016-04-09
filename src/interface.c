@@ -1,5 +1,3 @@
-#define GLEW_STATIC
-#include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
 
@@ -126,15 +124,6 @@ static void waitEvents(Display *xdisplay, struct terminal *term) {
 }
 
 
-static void init_glew()
-{
-  glewExperimental = GL_TRUE;
-  GLenum err = glewInit();
-  if (err != GLEW_OK) 
-    exit(1);
-  if (!GLEW_VERSION_3_2) 
-    exit(1);
-}
 
 void * setup(struct options opts) {
 
@@ -172,8 +161,6 @@ void * setup(struct options opts) {
 
   if (opts.show_pointer == 0)
     glfwSetInputMode(app->window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-
-  init_glew();
 
   app->renderer = renderer_create(opts);
 

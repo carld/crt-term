@@ -1,4 +1,4 @@
-
+#define GLEW_STATIC
 #include <GL/glew.h>
 
 #include <stdio.h>
@@ -48,10 +48,22 @@ static GLuint elements[] = {
     2, 3, 0
 };
 
+static void init_glew()
+{
+  glewExperimental = GL_TRUE;
+  GLenum err = glewInit();
+  if (err != GLEW_OK)
+    exit(1);
+  if (!GLEW_VERSION_3_2)
+    exit(1);
+}
+
 struct renderer * renderer_create(struct options opts) {
   struct renderer *renderer = calloc(1, sizeof(struct renderer));
 
   assert(renderer); 
+
+  init_glew();
 
   if (opts.linear_filter) 
     renderer->texture_filter = GL_LINEAR;
