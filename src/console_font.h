@@ -1,8 +1,7 @@
 
+struct console_font {
 
-struct display {
-
-  struct bdf_font *font;
+  struct bdf_font *bdf;
 
   /* the font bitmap */
   unsigned int font_width, font_height;
@@ -20,13 +19,11 @@ struct display {
   /* the dimension of the display in characters */
   int rows, cols;
 
-  /* libtsm screen draw age */
-  int age;
 };
 
 /* create a new display in the given pixel dimensions, and the provided bdf font file */
-void display_create(struct display **disp, int w, int h, const char *font, int dot_stretch);
+void font_create(struct console_font **disp, int w, int h, const char *font, int dot_stretch);
 
 /* retrieve the bitmap for a given character glyph encoding, coloring with foreground and background */
-unsigned char * display_fetch_glyph(struct display *disp, int encoding, unsigned char fg, unsigned char bg);
+unsigned char * font_fetch_glyph(struct console_font *disp, int encoding, unsigned char fg, unsigned char bg);
 

@@ -25,3 +25,5 @@ struct options
 
 struct options options_defaults();
 
+void print_options(struct options o);
+

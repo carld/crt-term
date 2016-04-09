@@ -1,18 +1,15 @@
 
-struct terminal {
-  struct shl_pty *pty;
-  struct tsm_vte *vte;
-  struct tsm_screen *screen;
-  struct tsm_screen_attr *attr;
+struct terminal;
 
-  /* process id of the child process (slave side of psuedo terminal) */
-  int pid;
-};
+struct terminal * terminal_create(struct terminal **term);
 
-void terminal_create(struct terminal **term, int w, int h);
+void terminal_resize(struct terminal *term, int w, int h);
 
-void terminal_set_callback(void (*callback) (void));
+void terminal_input(struct terminal *term, struct event *ev);
 
-int select_fd_array(struct timeval *timeout, int *fd_list, int len);
+int terminal_get_fd(struct terminal *term);
 
+void terminal_flush(struct terminal *term);
+
+void terminal_set_callback(struct terminal *term, void (*fn) (struct event *, void *), void *user);
 
