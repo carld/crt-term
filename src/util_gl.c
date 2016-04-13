@@ -2,7 +2,13 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#if LINUX
 #include <GL/glew.h>
+#endif
+
+#if DARWIN
+#include <OpenGL/gl.h>
+#endif
 
 void info() {
   printf("OpenGL          %s\n", glGetString(GL_VERSION));

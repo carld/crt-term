@@ -1,13 +1,23 @@
 
 #include <GLFW/glfw3.h>
 
+#ifdef LINUX
 #define GLFW_EXPOSE_NATIVE_GLX
 #define GLFW_EXPOSE_NATIVE_X11
 #include <GLFW/glfw3native.h>
+#endif
 
+#ifdef DARWIN
+//#define GLFW_EXPOSE_NATIVE_NSGL
+//#define GLFW_EXPOSE_NATIVE_COCOA
+//#include <GLFW/glfw3native.h>
+#endif
+
+#ifdef LINUX
 #include <xkbcommon/xkbcommon.h>
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
+#endif
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -88,8 +98,13 @@ static void key_callback(GLFWwindow* window, int key /*glfw*/, int scancode, int
   event.k.key = key;
   event.k.ascii = XKB_KEY_NoSymbol;
 
+#ifdef LINUX
   key = XkbKeycodeToKeysym( glfwGetX11Display()   , scancode, 0, mods & GLFW_MOD_SHIFT ? 1 : 0);
   event.k.ucs4 = xkb_keysym_to_utf32(key);
+#endif
+
+#ifdef DARWIN
+#endif
 
   if (!event.k.ucs4)
     event.k.ucs4 = TSM_VTE_INVALID;
@@ -110,6 +125,7 @@ static void key_callback(GLFWwindow* window, int key /*glfw*/, int scancode, int
   select on both the X11 connection file descriptor and
   the pty file descriptor.
 */
+#ifdef LINUX
 static void waitEvents(Display *xdisplay, struct terminal *term) {
   int fdlist[2];
 
@@ -122,7 +138,7 @@ static void waitEvents(Display *xdisplay, struct terminal *term) {
   while( select_fd_array(NULL, fdlist, 2) <= 0 )
     ;
 }
-
+#endif
 
 
 void * setup(struct options opts) {
@@ -164,6 +180,12 @@ void * setup(struct options opts) {
 
   app->renderer = renderer_create(opts);
 
+#if 0
+  int width, height;
+  glfwGetFramebufferSize(app->window, &width, &height);
+  renderer_set_framebuffer_size(app->renderer, width, height);
+#endif
+
   int glyph_wh[2];
   renderer_get_glyph_wh(app->renderer, glyph_wh) ;
 
@@ -191,9 +213,11 @@ void run(void *ptr) {
 
     glfwSwapBuffers(app->window);
 
+#ifdef LINUX
     if (app->opts.wait_events) {
       waitEvents(  glfwGetX11Display() , app->terminal);
     }
+#endif
 
     glfwPollEvents();
 

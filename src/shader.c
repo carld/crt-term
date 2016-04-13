@@ -6,7 +6,13 @@
 #include <fcntl.h>
 #include <assert.h>
 
+#if LINUX
 #include <GL/glew.h>
+#endif
+
+#if DARWIN
+#include <OpenGL/gl.h>
+#endif
 
 #include "shader.h"
 #include "util_gl.h"
@@ -15,7 +21,7 @@ static GLchar * read_file(const GLchar *fname, GLint *len) {
   struct stat buf;
   int fd = -1;
   GLchar *src = NULL;
-  size_t bytes = 0;
+  int bytes = 0;
 
   if (stat(fname, &buf) != 0) 
     goto error;

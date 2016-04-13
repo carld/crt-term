@@ -2,16 +2,25 @@
 PLATFORM = $(shell uname)
 REV = $(shell git rev-parse HEAD)
 
-ifeq ($(findstring Linux,$(PLATFORM)),Linux)
-  $(info Building revision $(REV) for $(PLATFORM))
-else
-  $(error $(PLATFORM) is not supported)
-  $(shell exit 2)
+$(info Building revision $(REV) for $(PLATFORM))
+
+CMAKE_OPTS = -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_DOCS=OFF \
+						 -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF
+ifeq (Linux,$(PLATFORM))
+	CC = gcc
+	CFLAGS += -DLINUX=1
+	LFLAGS += -lGLU -lGL -lGLEW
+	LFLAGS += $(GLFW) -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor -lXi
 endif
 
-GIT = /usr/bin/git
+ifeq (Darwin,$(PLATFORM))
+	CC = cc
+	CFLAGS += -DDARWIN=1
+	LFLAGS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -framework Carbon
+	CMAKE_OPTS += -DGLFW_USE_RETINA=OFF
+endif
 
-CC = gcc
+GIT = $(which git)
 
 GLFW = glfw/src/libglfw3.a
 
@@ -20,9 +29,8 @@ CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
 CFLAGS += -I./glfw/include
 CFLAGS += -I./libxkbcommon
 CFLAGS += -pg
-LFLAGS += -lGLU -lGL -lGLEW
-LFLAGS += $(GLFW) -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor -lXi
 LFLAGS += -pg
+LFLAGS += $(GLFW)
 
 TSM = $(wildcard libtsm/src/*.c) $(wildcard libtsm/external/*.c)
 SHL = libshl/src/shl_pty.c
@@ -45,10 +53,7 @@ $(BIN): $(GLFW) $(OBJ)
 
 $(GLFW):
 	cd glfw; \
-	cmake -DBUILD_SHARED_LIBS=OFF \
-              -DGLFW_BUILD_DOCS=OFF \
-              -DGLFW_BUILD_EXAMPLES=OFF \
-              -DGLFW_BUILD_TESTS=OFF .; \
+	cmake $(CMAKE_OPTS) .; \
 	make
 
 clean:

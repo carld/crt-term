@@ -1,5 +1,11 @@
+#ifdef LINUX
 #define GLEW_STATIC
 #include <GL/glew.h>
+#endif
+
+#ifdef DARWIN
+#include <OpenGL/gl3.h>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +28,7 @@ struct renderer {
   GLuint tex;
   GLuint ebo;
 
+  // uniform
   GLint sourceSize;
   GLint targetSize;
   GLint appTime;
@@ -33,6 +40,8 @@ struct renderer {
   struct shader shader[2];
 
   struct console_font *font;
+
+  int frame_buffer_wh[2];
 };
 
 static float vertices[] = {
@@ -50,12 +59,14 @@ static GLuint elements[] = {
 
 static void init_glew()
 {
+#if LINUX
   glewExperimental = GL_TRUE;
   GLenum err = glewInit();
   if (err != GLEW_OK)
     exit(1);
   if (!GLEW_VERSION_3_2)
     exit(1);
+#endif
 }
 
 struct renderer * renderer_create(struct options opts) {
@@ -69,6 +80,9 @@ struct renderer * renderer_create(struct options opts) {
     renderer->texture_filter = GL_LINEAR;
   else
     renderer->texture_filter = GL_NEAREST;
+
+  renderer->frame_buffer_wh[0] = opts.window_wh[0];
+  renderer->frame_buffer_wh[1] = opts.window_wh[1];
 
   font_create(&renderer->font, opts.texture_wh[0], opts.texture_wh[1], opts.font_filename, opts.dot_stretch);
 
@@ -141,6 +155,7 @@ struct renderer * renderer_create(struct options opts) {
 }
 
 void render(float time, struct renderer *renderer) {
+  glViewport(0, 0, renderer->frame_buffer_wh[0], renderer->frame_buffer_wh[1]);
   glClear(GL_COLOR_BUFFER_BIT);
   glUseProgram(renderer->program);
   glUniform1f(renderer->appTime, time);
@@ -165,5 +180,11 @@ void renderer_putc(struct renderer *scn, unsigned ch, unsigned posx, unsigned po
 void renderer_get_glyph_wh(struct renderer *scn, int *wh) {
   wh[0] = scn->font->glyph_width;
   wh[1] = scn->font->glyph_height;
+}
+
+void renderer_set_framebuffer_size(struct renderer *r, int w, int h) 
+{
+  r->frame_buffer_wh[0] = w;
+  r->frame_buffer_wh[0] = h;
 }
 
