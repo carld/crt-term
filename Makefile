@@ -17,7 +17,7 @@ ifeq (Darwin,$(PLATFORM))
 	CC = cc
 	CFLAGS += -DDARWIN=1
 	LFLAGS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -framework Carbon
-	CMAKE_OPTS += -DGLFW_USE_RETINA=OFF
+	CMAKE_OPTS += -DGLFW_USE_RETINA=OFF -DGLFW_USE_CHDIR=OFF
 endif
 
 GIT = $(which git)
