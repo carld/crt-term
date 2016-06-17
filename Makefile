@@ -4,9 +4,10 @@ REV = $(shell git rev-parse HEAD)
 
 ifeq ($(findstring Linux,$(PLATFORM)),Linux)
   $(info Building revision $(REV) for $(PLATFORM))
-else
-  $(error $(PLATFORM) is not supported)
-  $(shell exit 2)
+endif
+
+ifeq ($(PLATFORM),Darwin)
+  $(info Building revision $(REV) for $(PLATFORM))
 endif
 
 GIT = /usr/bin/git
