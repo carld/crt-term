@@ -5,7 +5,7 @@ REV = $(shell git rev-parse HEAD)
 $(info Building revision $(REV) for $(PLATFORM))
 
 CMAKE_OPTS = -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_DOCS=OFF \
-						 -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF
+             -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF
 ifeq (Linux,$(PLATFORM))
 	CC = gcc
 	CFLAGS += -DLINUX=1
@@ -18,6 +18,7 @@ ifeq (Darwin,$(PLATFORM))
 	CFLAGS += -DDARWIN=1
 	LFLAGS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -framework Carbon
 	CMAKE_OPTS += -DGLFW_USE_RETINA=OFF -DGLFW_USE_CHDIR=OFF
+	PATCH_LIBSHL = patch -d libshl -p 1 < libshl_osx.patch
 endif
 
 GIT = $(which git)
@@ -42,7 +43,12 @@ SRC += $(wildcard src/*.c)
 OBJ = $(SRC:.c=.o)
 BIN = crt-term
 
-.PHONY: clean
+.PHONY: clean prebuild
+
+all: prebuild $(BIN)
+
+prebuild:
+	$(PATCH_LIBSHL)
 
 .c.o:  $(SRC)
 	$(CC) -c $(CFLAGS) $< -o $@
@@ -60,4 +66,7 @@ clean:
 	cd glfw; make clean
 	rm -vf $(BIN) $(OBJ)
 
+total_clean: clean
+	cd libshl && git checkout . && git clean -f && cd ..
+	cd glfw && git checkout . && git clean -f && cd ..
 

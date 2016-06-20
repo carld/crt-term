@@ -1,0 +1,57 @@
+diff --git a/src/shl_pty.c b/src/shl_pty.c
+index 8731203..b5418d5 100644
+--- a/src/shl_pty.c
++++ b/src/shl_pty.c
+@@ -12,14 +12,16 @@
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <limits.h>
+-#include <pty.h>
++#include <util.h>
+ #include <signal.h>
+ #include <stdbool.h>
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <sys/epoll.h>
++#include <sys/types.h>
++#include <sys/event.h>
++#include <sys/time.h>
+ #include <sys/ioctl.h>
+ #include <sys/uio.h>
+ #include <termios.h>
+@@ -337,7 +339,7 @@ static int pty_init_child(int fd)
+ 	if (r < 0)
+ 		return -errno;
+ 
+-	for (i = 1; i < SIGUNUSED; ++i)
++	for (i = 1; i < 33; ++i)
+ 		signal(i, SIG_DFL);
+ 
+ 	r = grantpt(fd);
+@@ -395,7 +397,7 @@ pid_t shl_pty_open(struct shl_pty **out,
+ 		return -errno;
+ 	}
+ 
+-	r = pipe2(comm, O_CLOEXEC);
++	r = pipe(comm);
+ 	if (r < 0) {
+ 		r = -errno;
+ 		close(fd);
+@@ -598,7 +600,7 @@ int shl_pty_resize(struct shl_pty *pty,
+  * that do not support edge-triggered interfaces. There is no other reason
+  * to use this bridge.
+  */
+-
++#if 0
+ int shl_pty_bridge_new(void)
+ {
+ 	int fd;
+@@ -672,3 +674,6 @@ void shl_pty_bridge_remove(int bridge, struct shl_pty *pty)
+ 	fd = shl_pty_get_fd(pty);
+ 	epoll_ctl(bridge, EPOLL_CTL_DEL, fd, NULL);
+ }
++
++#endif
++
