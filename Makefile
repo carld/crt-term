@@ -68,8 +68,15 @@ $(GLFW):
 clean:
 	cd glfw; make clean
 	rm -vf $(BIN) $(OBJ)
+	rm -rf $(BIN).app
 
 total_clean: clean
 	cd libshl && git checkout . && git clean -f && cd ..
 	cd glfw && git checkout . && git clean -f && cd ..
 
+$(BIN).app:
+	mkdir -p $@/Contents/MacOS
+	mkdir -p $@/Contents/Resources
+	cp $(BIN) $@/Contents/MacOS
+	cp fonts/* $@/Contents/MacOS
+	cp shaders/* $@/Contents/MacOS
