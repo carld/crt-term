@@ -45,7 +45,7 @@ SRC += $(wildcard src/*.c)
 OBJ = $(SRC:.c=.o)
 BIN = crt-term
 
-.PHONY: clean prebuild
+.PHONY: clean prebuild $(BIN).app
 
 all: prebuild $(BIN)
 
@@ -80,3 +80,6 @@ $(BIN).app:
 	cp $(BIN) $@/Contents/MacOS
 	cp fonts/* $@/Contents/MacOS
 	cp shaders/* $@/Contents/MacOS
+	cp Info.plist $@/Contents
+
+
