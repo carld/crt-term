@@ -19,7 +19,7 @@ ifeq (Darwin,$(PLATFORM))
 	CFLAGS += -DDARWIN=1
 	LFLAGS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -framework Carbon
 	CMAKE_OPTS += -DGLFW_USE_RETINA=OFF -DGLFW_USE_CHDIR=OFF
-	PATCH_LIBSHL = patch -d libshl -p 1 < libshl_osx.patch
+	PATCH_LIBSHL = patch -d libshl -p 1 < libshl_osx.patch; true
 	GLFW_TAG = 3.0.4
 endif
 
@@ -50,7 +50,7 @@ BIN = crt-term
 all: prebuild $(BIN)
 
 prebuild:
-	$(PATCH_LIBSHL); true
+	$(PATCH_LIBSHL)
 
 .c.o:  $(SRC)
 	$(CC) -c $(CFLAGS) $< -o $@
