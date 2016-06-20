@@ -38,7 +38,6 @@ const char * find_file(const char *filename, const char *paths[], int pathc)
       free(namelist);
     }
   }
-  assert(found_path != NULL);
   return found_path;
 }
 

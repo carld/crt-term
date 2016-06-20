@@ -65,6 +65,10 @@ static void font_load_bdf(struct console_font *font, const char *filename, int d
   int total_chars = 255;
 
   fp = fopen(filename, "r");
+  if(fp == NULL){
+    printf("Could not open: %s\n", filename);
+    exit(-1);
+  }
   assert(fp != NULL);
 
   bdf_read(fp, &font->bdf, &lines);
