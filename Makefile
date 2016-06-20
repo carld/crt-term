@@ -11,6 +11,7 @@ ifeq (Linux,$(PLATFORM))
 	CFLAGS += -DLINUX=1
 	LFLAGS += -lGLU -lGL -lGLEW
 	LFLAGS += $(GLFW) -lrt -lm -ldl -lX11 -lpthread -lXrandr -lXinerama -lXxf86vm -lXcursor -lXi
+	GLFW_TAG = 3.0.4
 endif
 
 ifeq (Darwin,$(PLATFORM))
@@ -19,6 +20,7 @@ ifeq (Darwin,$(PLATFORM))
 	LFLAGS += -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo -framework Carbon
 	CMAKE_OPTS += -DGLFW_USE_RETINA=OFF -DGLFW_USE_CHDIR=OFF
 	PATCH_LIBSHL = patch -d libshl -p 1 < libshl_osx.patch
+	GLFW_TAG = 3.0.4
 endif
 
 GIT = $(which git)
@@ -59,6 +61,7 @@ $(BIN): $(GLFW) $(OBJ)
 
 $(GLFW):
 	cd glfw; \
+	git checkout $(GLFW_TAG); \
 	cmake $(CMAKE_OPTS) .; \
 	make
 
