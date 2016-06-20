@@ -50,7 +50,7 @@ BIN = crt-term
 all: prebuild $(BIN)
 
 prebuild:
-	$(PATCH_LIBSHL)
+	$(PATCH_LIBSHL); true
 
 .c.o:  $(SRC)
 	$(CC) -c $(CFLAGS) $< -o $@
