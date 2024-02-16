@@ -15,7 +15,7 @@ CC = gcc
 
 GLFW = glfw/src/libglfw3.a
 
-CFLAGS += -g -ggdb -Wall -D_GNU_SOURCE
+CFLAGS += -g -ggdb -Wall -D_GNU_SOURCE -DSIGUNUSED=SIGSYS
 CFLAGS += -I./libtsm/src -I./libtsm -I./libshl/src
 CFLAGS += -I./glfw/include
 CFLAGS += -I./libxkbcommon
